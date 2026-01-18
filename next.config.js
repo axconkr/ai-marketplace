@@ -7,6 +7,9 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   compress: true,
 
+  // Docker deployment - standalone output
+  output: 'standalone',
+
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
