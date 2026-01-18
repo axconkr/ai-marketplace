@@ -233,7 +233,7 @@ export default function DashboardProductsPage() {
                         {formatPrice(product.price, product.currency)}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {product.pricing_model}
+                        일회성 구매
                       </div>
                     </div>
 
