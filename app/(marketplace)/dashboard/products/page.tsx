@@ -256,7 +256,7 @@ export default function DashboardProductsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleDelete(product.id, product.title)}
+                        onClick={() => handleDelete(product.id, product.name)}
                         disabled={deletingId === product.id}
                       >
                         <Trash2 className="w-4 h-4 text-destructive" />
