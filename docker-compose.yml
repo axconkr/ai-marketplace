@@ -1,0 +1,105 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (Development)
+  postgres:
+    image: postgres:14-alpine
+    container_name: ai_marketplace_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-ai_marketplace}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev_password_change_in_prod}
+      POSTGRES_DB: ${DB_NAME:-ai_marketplace}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${DB_PORT:-5434}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ai_marketplace} -d ${DB_NAME:-ai_marketplace}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - ai_marketplace_network
+
+  # PostgreSQL Database (Testing)
+  postgres_test:
+    image: postgres:14-alpine
+    container_name: ai_marketplace_db_test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - ai_marketplace_network
+
+  # Redis Cache (Upstash-compatible)
+  redis:
+    image: redis:7-alpine
+    container_name: ai_marketplace_redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --loglevel warning
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - ai_marketplace_network
+
+  # Adminer - Database Management UI (Optional)
+  adminer:
+    image: adminer:latest
+    container_name: ai_marketplace_adminer
+    restart: unless-stopped
+    ports:
+      - "${ADMINER_PORT:-8080}:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: nette
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ai_marketplace_network
+    profiles:
+      - tools
+
+volumes:
+  postgres_data:
+    driver: local
+    name: ai_marketplace_postgres_data
+  redis_data:
+    driver: local
+    name: ai_marketplace_redis_data
+
+networks:
+  ai_marketplace_network:
+    driver: bridge
+    name: ai_marketplace_network

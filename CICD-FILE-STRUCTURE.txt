@@ -1,0 +1,206 @@
+CI/CD Pipeline - File Structure
+================================
+
+AI_marketplace/
+│
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # PR validation workflow
+│       └── deploy.yml                # Production deployment workflow
+│
+├── docs/
+│   ├── CI-CD-SETUP.md               # Comprehensive setup guide
+│   └── QUICK-START.md               # Quick reference guide
+│
+├── e2e/
+│   └── example.spec.ts              # Sample E2E tests (Playwright)
+│
+├── scripts/
+│   └── check-coverage.js            # Coverage validation script
+│
+├── app/
+│   └── api/
+│       └── health/
+│           └── route.ts             # Health check endpoint
+│
+├── Configuration Files
+│   ├── jest.config.js               # Jest test configuration
+│   ├── jest.setup.js                # Jest setup file
+│   ├── playwright.config.ts         # Playwright E2E configuration
+│   ├── tsconfig.json                # TypeScript configuration
+│   ├── .eslintrc.json               # ESLint rules
+│   ├── .prettierrc                  # Prettier formatting
+│   └── .prettierignore              # Prettier exclusions
+│
+├── Documentation
+│   ├── README-CICD.md               # Main CI/CD documentation
+│   ├── CICD-SUMMARY.md              # Quick summary & checklist
+│   └── CICD-FILE-STRUCTURE.txt      # This file
+│
+└── package.json                     # Enhanced with CI/CD scripts
+
+GitHub Actions Workflows
+=========================
+
+ci.yml (Pull Request Validation)
+├── 1. lint-and-format              [~10 min]
+│   ├── ESLint
+│   ├── Prettier
+│   └── TypeScript check
+├── 2. unit-tests                   [~15 min]
+│   ├── Jest tests
+│   ├── 80% coverage requirement
+│   └── Codecov upload
+├── 3. database-migration           [~10 min]
+│   ├── PostgreSQL container
+│   ├── Prisma migrations
+│   └── Schema validation
+├── 4. build                        [~15 min]
+│   ├── Next.js production build
+│   └── Build artifact upload
+├── 5. e2e-tests                    [~20 min]
+│   ├── Playwright tests
+│   ├── Multi-browser testing
+│   └── Test report generation
+├── 6. security                     [~10 min]
+│   ├── npm audit
+│   └── Dependency check
+└── 7. pr-report                    [Final]
+    └── Aggregate all results
+
+deploy.yml (Production Deployment)
+├── 1. pre-deploy-checks            [~15 min]
+│   ├── Commit validation
+│   └── Full test suite
+├── 2. migrate-database             [~10 min]
+│   ├── Supabase connection
+│   ├── Apply migrations
+│   └── Run seed scripts
+├── 3. deploy-vercel                [~15 min]
+│   ├── Build artifacts
+│   ├── Environment injection
+│   └── Deploy to production
+├── 4. post-deploy-verification     [~15 min]
+│   ├── Smoke tests
+│   ├── Health check
+│   └── Critical flow validation
+└── 5. rollback-on-failure          [~10 min]
+    └── Automatic rollback
+
+Scripts & Commands
+==================
+
+Testing:
+  pnpm test              - Run all tests
+  pnpm test:unit         - Unit tests only
+  pnpm test:e2e          - E2E tests only
+  pnpm test:coverage     - Coverage report
+  pnpm test:smoke        - Smoke tests
+
+Code Quality:
+  pnpm lint              - Run ESLint
+  pnpm lint:fix          - Fix issues
+  pnpm format            - Format code
+  pnpm format:check      - Check formatting
+  pnpm type-check        - TypeScript validation
+
+Database:
+  pnpm prisma:generate         - Generate client
+  pnpm prisma:migrate:dev      - Run migrations (dev)
+  pnpm prisma:migrate:deploy   - Run migrations (prod)
+  pnpm prisma:validate         - Validate schema
+  pnpm prisma:studio           - Open Prisma Studio
+
+Quality Gates
+=============
+
+✅ Code Quality
+   - ESLint passes
+   - Prettier formatting
+   - TypeScript compiles
+
+✅ Test Coverage
+   - Branches: ≥80%
+   - Functions: ≥80%
+   - Lines: ≥80%
+   - Statements: ≥80%
+
+✅ Build
+   - Production build succeeds
+   - No build errors/warnings
+
+✅ Database
+   - Migrations apply
+   - Schema validates
+
+✅ Security
+   - No critical vulnerabilities
+
+Required GitHub Secrets
+=======================
+
+Vercel:
+  - VERCEL_TOKEN
+  - VERCEL_ORG_ID
+  - VERCEL_PROJECT_ID
+
+Database:
+  - DATABASE_URL
+
+Supabase:
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY
+
+Payments:
+  - STRIPE_SECRET_KEY
+  - NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+  - TOSS_SECRET_KEY
+
+Cache:
+  - UPSTASH_REDIS_URL
+  - UPSTASH_REDIS_TOKEN
+
+Testing:
+  - PRODUCTION_URL
+  - E2E_USER_EMAIL
+  - E2E_USER_PASSWORD
+
+Next Steps
+==========
+
+1. Install dependencies:
+   pnpm install
+
+2. Setup pre-commit hooks:
+   pnpm prepare
+
+3. Configure GitHub secrets
+   (See docs/QUICK-START.md)
+
+4. Test the pipeline:
+   git checkout -b test/ci-pipeline
+   echo "# Test" > test.md
+   git add test.md
+   git commit -m "test: verify CI pipeline"
+   git push origin test/ci-pipeline
+
+5. Create PR and watch CI run
+
+6. Merge to main for automatic deployment
+
+Documentation
+=============
+
+- Quick Start: docs/QUICK-START.md
+- Full Setup: docs/CI-CD-SETUP.md
+- Main Docs: README-CICD.md
+- Summary: CICD-SUMMARY.md
+
+Support
+=======
+
+- Issues: GitHub Issues
+- Logs: GitHub Actions / Vercel Dashboard
+- Docs: See documentation files above
+

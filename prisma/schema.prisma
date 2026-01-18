@@ -1,0 +1,645 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                      String               @id @default(cuid())
+  email                   String               @unique
+  password                String?
+  name                    String?
+  avatar                  String?
+  role                    String               @default("user")
+  phone                   String?
+  kakao_id                String?
+  emailVerified           Boolean              @default(false)
+  oauthProvider           String?
+  oauthId                 String?
+  stripe_account_id       String?
+  stripeCustomerId        String?
+  bank_name               String?
+  bank_account            String?
+  account_holder          String?
+  bank_verified           Boolean              @default(false)
+  platform_fee_rate       Float                @default(0.15)
+  subscriptionTier        String?              @default("FREE")
+  verifier_stats          Json?
+  notification_settings   Json?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  files                   File[]               @relation("UserFiles")
+  notifications           Notification[]
+  orders                  Order[]              @relation("OrderBuyer")
+  products                Product[]            @relation("ProductSeller")
+  reviews                 Review[]
+  reviewVotes             ReviewVote[]
+  sessions                Session[]
+  settlements             Settlement[]
+  verificationsAsVerifier Verification[]       @relation("VerificationVerifier")
+  verifierPayouts         VerifierPayout[]
+  expertReviews           VerificationExpert[]
+  expertPayouts           ExpertPayout[]
+  wishlists               Wishlist[]
+  buyerRequests           DevelopmentRequest[] @relation("BuyerRequests")
+  sellerProposals         Proposal[]           @relation("SellerProposals")
+  subscriptions           Subscription[]
+
+  @@index([email])
+  @@index([oauthProvider, oauthId])
+  @@index([role])
+  @@index([subscriptionTier])
+  @@index([stripeCustomerId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+}
+
+model Product {
+  id                  String           @id @default(cuid())
+  name                String
+  description         String?
+  price               Float
+  currency            String           @default("KRW")
+  seller_id           String
+  status              String           @default("draft")
+  category            String?
+  download_count      Int              @default(0)
+  verification_level  Int              @default(0)
+  verification_badges String[]
+  verification_score  Float?
+  rating_average      Float?
+  rating_count        Int              @default(0)
+  rating_distribution Json?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  files               File[]
+  orders              Order[]
+  seller              User             @relation("ProductSeller", fields: [seller_id], references: [id], onDelete: Cascade)
+  reviews             Review[]
+  settlementItems     SettlementItem[]
+  verifications       Verification[]
+  wishlists           Wishlist[]
+
+  // Individual indexes for basic queries
+  @@index([seller_id])
+  @@index([status])
+  @@index([category])
+  @@index([verification_level])
+  @@index([rating_average])
+  @@index([price])
+  @@index([download_count])
+  @@index([createdAt])
+
+  // Composite indexes for advanced search performance
+  // These indexes optimize common filter combinations
+  @@index([category, status])
+  @@index([status, price])
+  @@index([status, rating_average])
+  @@index([status, verification_level])
+  @@index([status, createdAt])
+  @@index([category, status, price])
+  @@index([category, status, rating_average])
+  @@index([status, verification_level, rating_average])
+}
+
+model File {
+  id             String     @id @default(cuid())
+  product_id     String?
+  user_id        String
+  filename       String
+  original_name  String
+  mime_type      String
+  size           Int
+  path           String
+  url            String
+  download_count Int        @default(0)
+  status         FileStatus @default(ACTIVE)
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  deleted_at     DateTime?
+  product        Product?   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user           User       @relation("UserFiles", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+  @@index([user_id])
+  @@index([status])
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  buyer_id         String
+  product_id       String
+  amount           Float
+  currency         String
+  platform_fee     Float
+  seller_amount    Float
+  status           OrderStatus @default(PENDING)
+  payment_provider String?
+  refund_requested Boolean     @default(false)
+  refund_reason    String?
+  access_granted   Boolean     @default(false)
+  download_url     String?
+  download_expires DateTime?
+  paid_at          DateTime?
+  refunded_at      DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  buyer            User        @relation("OrderBuyer", fields: [buyer_id], references: [id], onDelete: Cascade)
+  product          Product     @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  payment          Payment?
+  refund           Refund?
+  review           Review?
+
+  @@index([buyer_id])
+  @@index([product_id])
+  @@index([status])
+  @@index([paid_at])
+}
+
+model Payment {
+  id                   String        @id @default(cuid())
+  order_id             String        @unique
+  provider             String
+  provider_payment_id  String        @unique
+  provider_customer_id String?
+  amount               Float
+  currency             String
+  status               PaymentStatus @default(PENDING)
+  payment_method       String?
+  card_last4           String?
+  card_brand           String?
+  failure_code         String?
+  failure_message      String?
+  metadata             Json?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+  order                Order         @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([provider_payment_id])
+  @@index([status])
+}
+
+model Refund {
+  id                 String       @id @default(cuid())
+  order_id           String       @unique
+  provider           String
+  provider_refund_id String       @unique
+  amount             Float
+  currency           String
+  reason             String?
+  status             RefundStatus @default(PENDING)
+  initiated_by       String
+  approved_by        String?
+  failure_reason     String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  order              Order        @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([provider_refund_id])
+  @@index([status])
+}
+
+model Settlement {
+  id                    String           @id @default(cuid())
+  seller_id             String
+  total_amount          Float            @default(0)
+  platform_fee          Float            @default(0)
+  payout_amount         Float
+  verification_earnings Int              @default(0)
+  verification_count    Int              @default(0)
+  currency              String
+  status                SettlementStatus @default(PENDING)
+  period_start          DateTime
+  period_end            DateTime
+  payout_date           DateTime?
+  payout_method         String?
+  payout_reference      String?
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  seller                User             @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  items                 SettlementItem[]
+  verifierPayouts       VerifierPayout[]
+  expertPayouts         ExpertPayout[]
+
+  @@unique([seller_id, period_start])
+  @@index([seller_id])
+  @@index([status])
+  @@index([period_start, period_end])
+}
+
+model SettlementItem {
+  id            String     @id @default(cuid())
+  settlement_id String
+  product_id    String
+  order_id      String
+  amount        Float
+  platform_fee  Float
+  payout_amount Float
+  createdAt     DateTime   @default(now())
+  product       Product    @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  settlement    Settlement @relation(fields: [settlement_id], references: [id], onDelete: Cascade)
+
+  @@index([settlement_id])
+  @@index([product_id])
+}
+
+model Verification {
+  id             String               @id @default(cuid())
+  product_id     String
+  verifier_id    String?
+  level          Int
+  status         VerificationStatus   @default(PENDING)
+  fee            Int
+  platform_share Int
+  verifier_share Int
+  report         Json?
+  score          Float?
+  badges         String[]             @default([])
+  requested_at   DateTime             @default(now())
+  assigned_at    DateTime?
+  reviewed_at    DateTime?
+  completed_at   DateTime?
+  product        Product              @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  verifier       User?                @relation("VerificationVerifier", fields: [verifier_id], references: [id])
+  verifierPayout VerifierPayout?
+  expertReviews  VerificationExpert[]
+
+  @@index([product_id])
+  @@index([verifier_id])
+  @@index([status])
+  @@index([level])
+  @@index([completed_at])
+}
+
+model VerificationExpert {
+  id              String             @id @default(cuid())
+  verification_id String
+  expert_id       String?
+  expert_type     ExpertType
+  status          ExpertReviewStatus @default(PENDING)
+  fee             Int
+  platform_share  Int
+  expert_share    Int
+  report          Json?
+  score           Float?
+  feedback        String?
+  requested_at    DateTime           @default(now())
+  assigned_at     DateTime?
+  reviewed_at     DateTime?
+  completed_at    DateTime?
+  verification    Verification       @relation(fields: [verification_id], references: [id], onDelete: Cascade)
+  expert          User?              @relation(fields: [expert_id], references: [id])
+  expertPayout    ExpertPayout?
+
+  @@index([verification_id])
+  @@index([expert_id])
+  @@index([expert_type])
+  @@index([status])
+  @@index([completed_at])
+}
+
+model ExpertPayout {
+  id                     String             @id @default(cuid())
+  expert_id              String
+  verification_expert_id String             @unique
+  settlement_id          String?
+  amount                 Int
+  status                 PayoutStatus       @default(PENDING)
+  paid_at                DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  expert                 User               @relation(fields: [expert_id], references: [id], onDelete: Cascade)
+  verificationExpert     VerificationExpert @relation(fields: [verification_expert_id], references: [id], onDelete: Cascade)
+  settlement             Settlement?        @relation(fields: [settlement_id], references: [id])
+
+  @@index([expert_id])
+  @@index([verification_expert_id])
+  @@index([settlement_id])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model VerifierPayout {
+  id              String       @id @default(cuid())
+  verifier_id     String
+  verification_id String       @unique
+  settlement_id   String?
+  amount          Int
+  status          PayoutStatus @default(PENDING)
+  paid_at         DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  settlement      Settlement?  @relation(fields: [settlement_id], references: [id])
+  verification    Verification @relation(fields: [verification_id], references: [id], onDelete: Cascade)
+  verifier        User         @relation(fields: [verifier_id], references: [id], onDelete: Cascade)
+
+  @@index([verifier_id])
+  @@index([verification_id])
+  @@index([settlement_id])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  user_id    String
+  type       NotificationType
+  title      String
+  message    String
+  link       String?
+  data       Json?
+  read       Boolean          @default(false)
+  read_at    DateTime?
+  created_at DateTime         @default(now())
+  expires_at DateTime?
+  user       User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, read])
+  @@index([user_id, created_at])
+  @@index([created_at])
+}
+
+model Review {
+  id                String       @id @default(cuid())
+  order_id          String       @unique
+  product_id        String
+  user_id           String
+  rating            Int
+  title             String?
+  comment           String
+  images            String[]
+  verified_purchase Boolean      @default(true)
+  seller_reply      String?
+  seller_replied_at DateTime?
+  status            ReviewStatus @default(PUBLISHED)
+  flagged           Boolean      @default(false)
+  flag_reason       String?
+  helpful_count     Int          @default(0)
+  not_helpful_count Int          @default(0)
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @updatedAt
+  order             Order        @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product           Product      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  votes             ReviewVote[]
+
+  @@index([product_id])
+  @@index([user_id])
+  @@index([rating])
+  @@index([created_at])
+  @@index([status])
+}
+
+model ReviewVote {
+  id         String   @id @default(cuid())
+  review_id  String
+  user_id    String
+  helpful    Boolean
+  created_at DateTime @default(now())
+  review     Review   @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([review_id, user_id])
+  @@index([review_id])
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  user_id    String
+  product_id String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  product    Product  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, product_id])
+  @@index([user_id])
+  @@index([product_id])
+}
+
+model DevelopmentRequest {
+  id                 String     @id @default(cuid())
+  title              String
+  description        String     @db.Text
+  category           String
+  budgetMin          Int
+  budgetMax          Int
+  timeline           String
+  requirements       Json
+  attachments        String[]
+  status             String     @default("OPEN")
+  buyerId            String
+  selectedProposalId String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  buyer              User       @relation("BuyerRequests", fields: [buyerId], references: [id], onDelete: Cascade)
+  proposals          Proposal[]
+  selectedProposal   Proposal?  @relation("SelectedProposal", fields: [selectedProposalId], references: [id])
+
+  @@index([buyerId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model Proposal {
+  id                  String               @id @default(cuid())
+  requestId           String
+  sellerId            String
+  price               Int
+  timeline            String
+  description         String               @db.Text
+  status              String               @default("PENDING")
+  selectedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  request             DevelopmentRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  seller              User                 @relation("SellerProposals", fields: [sellerId], references: [id], onDelete: Cascade)
+  selectedRequest     DevelopmentRequest[] @relation("SelectedProposal")
+  escrows             RequestEscrow[]
+
+  @@index([requestId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model RequestEscrow {
+  id                  String   @id @default(cuid())
+  requestId           String
+  proposalId          String
+  buyerId             String
+  sellerId            String
+  amount              Int
+  status              String   @default("PENDING")
+  stripePaymentIntent String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  proposal            Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([proposalId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier                 String
+  status               String   @default("ACTIVE")
+  interval             String
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean  @default(false)
+  stripeSubscriptionId String?  @unique
+  stripeCustomerId     String?
+  stripePriceId        String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+model SubscriptionPlan {
+  id                   String   @id @default(cuid())
+  name                 String
+  tier                 String   @unique
+  description          String?
+  features             Json
+  monthlyPrice         Int
+  yearlyPrice          Int
+  stripePriceIdMonthly String?
+  stripePriceIdYearly  String?
+  isActive             Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([tier])
+}
+
+enum FileStatus {
+  ACTIVE
+  DELETED
+  SCANNING
+  QUARANTINED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  COMPLETED
+  REFUNDED
+  CANCELLED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum VerificationStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PayoutStatus {
+  PENDING
+  INCLUDED_IN_SETTLEMENT
+  PAID
+}
+
+enum NotificationType {
+  ORDER_PLACED
+  ORDER_COMPLETED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  REFUND_APPROVED
+  REFUND_REJECTED
+  PRODUCT_APPROVED
+  PRODUCT_REJECTED
+  VERIFICATION_REQUESTED
+  VERIFICATION_COMPLETED
+  VERIFICATION_ASSIGNED
+  SETTLEMENT_READY
+  SETTLEMENT_PAID
+  REVIEW_RECEIVED
+  MESSAGE_RECEIVED
+  SYSTEM_ANNOUNCEMENT
+  REQUEST_CREATED
+  PROPOSAL_SUBMITTED
+  PROPOSAL_SELECTED
+  PROPOSAL_REJECTED
+  ESCROW_INITIATED
+  ESCROW_RELEASED
+  SUBSCRIPTION_CREATED
+  SUBSCRIPTION_UPDATED
+  SUBSCRIPTION_CANCELLED
+  SUBSCRIPTION_PAYMENT_FAILED
+}
+
+enum ExpertType {
+  DESIGN
+  PLANNING
+  DEVELOPMENT
+  DOMAIN
+}
+
+enum ExpertReviewStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  REJECTED
+}
+
+enum ReviewStatus {
+  PENDING
+  PUBLISHED
+  REJECTED
+  DELETED
+}

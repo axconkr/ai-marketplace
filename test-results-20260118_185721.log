@@ -1,0 +1,66 @@
+[0;34m[18:57:21][0m =========================================
+[0;34m[18:57:21][0m AI Marketplace MVP - Scenario Testing
+[0;34m[18:57:21][0m =========================================
+[0;34m[18:57:21][0m Start Time: 2026년 1월 18일 일요일 18시 57분 21초 KST
+[0;34m[18:57:21][0m 
+[0;34m[18:57:21][0m 
+[0;34m[18:57:21][0m =========================================
+[0;34m[18:57:21][0m PHASE 0: Server Health Check
+[0;34m[18:57:21][0m =========================================
+[0;34m[18:57:21][0m Testing page: Homepage
+[0;32m✓[0m Homepage - Status: 200
+[0;34m[18:57:26][0m 
+[0;34m[18:57:26][0m =========================================
+[0;34m[18:57:26][0m PHASE 1: Development Request System
+[0;34m[18:57:26][0m =========================================
+[0;34m[18:57:26][0m Testing page: Request List Page
+[0;32m✓[0m Request List Page - Status: 200
+[0;34m[18:57:29][0m Testing page: New Request Form Page
+[0;32m✓[0m New Request Form Page - Status: 200
+[0;34m[18:57:30][0m Testing: API: List all requests
+[0;31m✗[0m API: List all requests - Expected: 200, Got: 500
+Response: 
+[0;34m[18:57:35][0m Checking if subscription plans exist...
+[0;34m[18:57:35][0m Testing: API: Get subscription plans
+[0;31m✗[0m API: Get subscription plans - Expected: 200, Got: 500
+Response: 
+[0;34m[18:57:40][0m 
+[0;34m[18:57:40][0m Note: Full CRUD testing requires authentication and database.
+[0;34m[18:57:40][0m Testing available public endpoints only.
+[0;34m[18:57:40][0m 
+[0;34m[18:57:40][0m =========================================
+[0;34m[18:57:40][0m PHASE 2: Subscription Payment System
+[0;34m[18:57:40][0m =========================================
+[0;34m[18:57:40][0m Testing page: Pricing Page
+[0;32m✓[0m Pricing Page - Status: 200
+[0;34m[18:57:41][0m Testing: API: Get subscription plans
+[0;31m✗[0m API: Get subscription plans - Expected: 200, Got: 500
+Response: 
+[0;34m[18:57:46][0m 
+[0;34m[18:57:46][0m Note: Subscription dashboard requires authentication.
+[0;34m[18:57:46][0m Testing public pricing page only.
+[0;34m[18:57:46][0m 
+[0;34m[18:57:46][0m =========================================
+[0;34m[18:57:46][0m PHASE 3: Advanced Search & Filter
+[0;34m[18:57:46][0m =========================================
+[0;34m[18:57:46][0m Testing page: Search Page
+[0;32m✓[0m Search Page - Status: 200
+[0;34m[18:57:47][0m Testing: API: Product search (no filters)
+[0;31m✗[0m API: Product search (no filters) - Expected: 200, Got: 500
+Response: 
+[0;34m[18:57:52][0m Testing: API: Search with category filter
+[0;31m✗[0m API: Search with category filter - Expected: 200, Got: 500
+Response: 
+[0;34m[18:57:57][0m Testing: API: Search with price filter
+[0;31m✗[0m API: Search with price filter - Expected: 200, Got: 500
+Response: 
+[0;34m[18:58:02][0m Testing: API: Search with rating filter
+[0;31m✗[0m API: Search with rating filter - Expected: 200, Got: 500
+Response: 
+[0;34m[18:58:07][0m Testing: API: Search with verification filter
+[0;31m✗[0m API: Search with verification filter - Expected: 200, Got: 500
+Response: 
+[0;34m[18:58:12][0m Testing: API: Search with price sorting
+[0;31m✗[0m API: Search with price sorting - Expected: 200, Got: 500
+Response: 
+[0;34m[18:58:17][0m Testing: API: Search with pagination

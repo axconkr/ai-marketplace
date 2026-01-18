@@ -1,0 +1,90 @@
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m AI Marketplace MVP - Scenario Testing
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m Start Time: 2026년 1월 18일 일요일 00시 42분 15초 KST
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m PHASE 0: Server Health Check
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m Testing page: Homepage
+[0;32m✓[0m Homepage - Status: 200
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m PHASE 1: Development Request System
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m Testing page: Request List Page
+[0;32m✓[0m Request List Page - Status: 200
+[0;34m[00:42:15][0m Testing page: New Request Form Page
+[0;32m✓[0m New Request Form Page - Status: 200
+[0;34m[00:42:15][0m Testing: API: List all requests
+[0;31m✗[0m API: List all requests - Expected: 200, Got: 404
+Response: 
+[0;34m[00:42:15][0m Checking if subscription plans exist...
+[0;34m[00:42:15][0m Testing: API: Get subscription plans
+[0;31m✗[0m API: Get subscription plans - Expected: 200, Got: 404
+Response: 
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m Note: Full CRUD testing requires authentication and database.
+[0;34m[00:42:15][0m Testing available public endpoints only.
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m PHASE 2: Subscription Payment System
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m Testing page: Pricing Page
+[0;32m✓[0m Pricing Page - Status: 200
+[0;34m[00:42:15][0m Testing: API: Get subscription plans
+[0;31m✗[0m API: Get subscription plans - Expected: 200, Got: 404
+Response: 
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m Note: Subscription dashboard requires authentication.
+[0;34m[00:42:15][0m Testing public pricing page only.
+[0;34m[00:42:15][0m 
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m PHASE 3: Advanced Search & Filter
+[0;34m[00:42:15][0m =========================================
+[0;34m[00:42:15][0m Testing page: Search Page
+[0;32m✓[0m Search Page - Status: 200
+[0;34m[00:42:15][0m Testing: API: Product search (no filters)
+[0;31m✗[0m API: Product search (no filters) - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:20][0m Testing: API: Search with category filter
+[0;31m✗[0m API: Search with category filter - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:25][0m Testing: API: Search with price filter
+[0;31m✗[0m API: Search with price filter - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:30][0m Testing: API: Search with rating filter
+[0;31m✗[0m API: Search with rating filter - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:35][0m Testing: API: Search with verification filter
+[0;31m✗[0m API: Search with verification filter - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:40][0m Testing: API: Search with price sorting
+[0;31m✗[0m API: Search with price sorting - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:45][0m Testing: API: Search with pagination
+[0;31m✗[0m API: Search with pagination - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:50][0m Testing: API: Search with combined filters
+[0;31m✗[0m API: Search with combined filters - Expected: 200, Got: 500
+Response: 
+[0;34m[00:42:55][0m 
+[0;34m[00:42:55][0m =========================================
+[0;34m[00:42:55][0m Additional Pages
+[0;34m[00:42:55][0m =========================================
+[0;34m[00:42:56][0m Testing page: Products Page
+[0;32m✓[0m Products Page - Status: 200
+[0;34m[00:42:57][0m 
+[0;34m[00:42:57][0m =========================================
+[0;34m[00:42:57][0m TEST SUMMARY
+[0;34m[00:42:57][0m =========================================
+[0;34m[00:42:57][0m Total Tests: 17
+[0;34m[00:42:57][0m Passed: [0;32m6[0m
+[0;34m[00:42:57][0m Failed: [0;31m11[0m
+[0;34m[00:42:57][0m Success Rate: 35%
+[0;34m[00:42:57][0m 
+[0;34m[00:42:57][0m End Time: 2026년 1월 18일 일요일 00시 42분 57초 KST
+[0;34m[00:42:57][0m Log saved to: test-results-20260118_004215.log
+[0;34m[00:42:57][0m 
+[0;31m✗[0m Some tests failed. Check log for details.

@@ -1,0 +1,374 @@
+// Prisma Schema for AI Marketplace
+// Database: PostgreSQL (Development) / Supabase PostgreSQL (Production)
+// ORM: Prisma
+// Compatible with Row Level Security (RLS)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum UserRole {
+  buyer
+  seller
+  verifier
+  admin
+}
+
+enum SellerTier {
+  new       // 신규 판매자
+  verified  // 검증 완료
+  pro       // 프로 판매자
+  master    // 마스터 판매자
+}
+
+enum ProductCategory {
+  n8n        // n8n 워크플로우 템플릿
+  make       // Make 시나리오
+  ai_agent   // AI 에이전트
+  app        // 바이브코딩 앱
+  api        // API 서비스
+  prompt     // 프롬프트 템플릿
+}
+
+enum PricingModel {
+  one_time     // 일회성 구매
+  subscription // 구독형
+  license      // 라이선스
+}
+
+enum ProductStatus {
+  draft      // 초안
+  pending    // 승인 대기
+  active     // 판매 중
+  suspended  // 판매 중지
+}
+
+enum OrderStatus {
+  pending    // 결제 대기
+  paid       // 결제 완료
+  completed  // 구매 완료 (파일 다운로드)
+  refunded   // 환불 완료
+  disputed   // 분쟁 중
+}
+
+enum VerificationStatus {
+  pending      // 검증 대기
+  in_progress  // 검증 중
+  approved     // 승인
+  rejected     // 거부
+}
+
+enum PaymentProvider {
+  stripe         // Stripe (글로벌)
+  tosspayments   // 토스페이먼츠 (국내)
+}
+
+enum Currency {
+  USD  // 미국 달러
+  KRW  // 한국 원
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+model User {
+  id          String      @id @default(uuid()) @db.Uuid
+  email       String      @unique
+  password    String?     // OAuth 사용 시 null 가능
+  name        String?
+  avatar_url  String?
+
+  // 역할 및 등급
+  role        UserRole    @default(buyer)
+  seller_tier SellerTier?  // seller 역할일 때만 사용
+
+  // 프로필
+  bio         String?     @db.Text
+  portfolio   Json?       // 포트폴리오 링크, 설명 등
+
+  // 인증 관련
+  email_verified Boolean   @default(false)
+  oauth_provider String?   // google, github 등
+  oauth_id       String?
+
+  // 타임스탬프
+  created_at  DateTime    @default(now())
+  updated_at  DateTime    @updatedAt
+
+  // Relations
+  products           Product[]        @relation("SellerProducts")
+  orders             Order[]          @relation("BuyerOrders")
+  verifications      Verification[]   @relation("VerifierVerifications")
+  seller_reviews     Review[]         @relation("SellerReviews")
+  buyer_reviews      Review[]         @relation("BuyerReviews")
+  payments_sent      Payment[]        @relation("BuyerPayments")
+  payments_received  Payment[]        @relation("SellerPayments")
+
+  @@index([email])
+  @@index([role])
+  @@index([seller_tier])
+  @@map("users")
+}
+
+model Product {
+  id          String          @id @default(uuid()) @db.Uuid
+  seller_id   String          @db.Uuid
+
+  // 기본 정보
+  title       String
+  description String          @db.Text
+  category    ProductCategory
+  tags        String[]        // 검색 최적화용 태그
+
+  // 가격
+  pricing_model PricingModel
+  price         Decimal       @db.Decimal(10, 2)
+  currency      Currency      @default(USD)
+
+  // 검증
+  verification_level Int        @default(0) // 0: 미검증, 1-3: 검증 레벨
+
+  // 상태
+  status      ProductStatus   @default(draft)
+
+  // 파일 및 리소스
+  file_url    String?         // Supabase Storage URL
+  demo_url    String?         // 데모 영상/사이트 URL
+
+  // 통계
+  view_count     Int          @default(0)
+  download_count Int          @default(0)
+  rating_avg     Decimal?     @db.Decimal(3, 2) // 평균 평점 (1.00-5.00)
+  review_count   Int          @default(0)
+
+  // 타임스탬프
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+  published_at DateTime?      // 최초 승인 시각
+
+  // Relations
+  seller        User           @relation("SellerProducts", fields: [seller_id], references: [id], onDelete: Cascade)
+  orders        Order[]
+  verifications Verification[]
+  reviews       Review[]
+
+  @@index([seller_id])
+  @@index([category])
+  @@index([status])
+  @@index([verification_level])
+  @@index([created_at])
+  @@index([rating_avg])
+  @@map("products")
+}
+
+model Order {
+  id          String       @id @default(uuid()) @db.Uuid
+  buyer_id    String       @db.Uuid
+  product_id  String       @db.Uuid
+
+  // 금액
+  amount      Decimal      @db.Decimal(10, 2)
+  currency    Currency     @default(USD)
+
+  // 상태
+  status      OrderStatus  @default(pending)
+
+  // 결제 정보
+  payment_id  String?      @db.Uuid
+
+  // 환불 관련
+  refund_reason String?    @db.Text
+  refunded_at   DateTime?
+
+  // 타임스탬프
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
+  completed_at DateTime?   // 파일 다운로드 완료 시각
+
+  // Relations
+  buyer       User         @relation("BuyerOrders", fields: [buyer_id], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [product_id], references: [id], onDelete: Restrict)
+  payment     Payment?     @relation(fields: [payment_id], references: [id])
+  review      Review?
+
+  @@index([buyer_id])
+  @@index([product_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("orders")
+}
+
+model Payment {
+  id          String          @id @default(uuid()) @db.Uuid
+  order_id    String?         @db.Uuid
+  buyer_id    String          @db.Uuid
+  seller_id   String          @db.Uuid
+
+  // 결제 금액
+  amount      Decimal         @db.Decimal(10, 2)
+  currency    Currency        @default(USD)
+
+  // 수수료
+  platform_fee Decimal        @db.Decimal(10, 2) // 플랫폼 수수료
+  seller_amount Decimal       @db.Decimal(10, 2) // 판매자 정산 금액
+
+  // 결제 제공자
+  provider    PaymentProvider
+  provider_payment_id String?  // Stripe payment_intent_id 등
+
+  // 상태
+  status      String          // succeeded, failed, pending, refunded
+
+  // 메타데이터
+  metadata    Json?
+
+  // 타임스탬프
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+
+  // Relations
+  buyer       User            @relation("BuyerPayments", fields: [buyer_id], references: [id], onDelete: Cascade)
+  seller      User            @relation("SellerPayments", fields: [seller_id], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@index([buyer_id])
+  @@index([seller_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("payments")
+}
+
+model Review {
+  id          String    @id @default(uuid()) @db.Uuid
+  order_id    String    @unique @db.Uuid
+  product_id  String    @db.Uuid
+  buyer_id    String    @db.Uuid
+  seller_id   String    @db.Uuid
+
+  // 평가
+  rating      Int       // 1-5
+  comment     String?   @db.Text
+
+  // 판매자 응답
+  seller_reply String?  @db.Text
+  replied_at   DateTime?
+
+  // 타임스탬프
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  // Relations
+  order       Order     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product     Product   @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  buyer       User      @relation("BuyerReviews", fields: [buyer_id], references: [id], onDelete: Cascade)
+  seller      User      @relation("SellerReviews", fields: [seller_id], references: [id], onDelete: Cascade)
+
+  @@index([product_id])
+  @@index([buyer_id])
+  @@index([seller_id])
+  @@index([rating])
+  @@index([created_at])
+  @@map("reviews")
+}
+
+model Verification {
+  id          String              @id @default(uuid()) @db.Uuid
+  product_id  String              @db.Uuid
+  verifier_id String?             @db.Uuid
+
+  // 검증 레벨
+  level       Int                 // 1, 2, 3
+
+  // 상태
+  status      VerificationStatus  @default(pending)
+
+  // 검증 보고서
+  report      Json?               // 검증 결과, 체크리스트, 코멘트 등
+
+  // 비용
+  fee         Decimal             @db.Decimal(10, 2)
+  currency    Currency            @default(USD)
+
+  // 타임스탬프
+  created_at  DateTime            @default(now())
+  updated_at  DateTime            @updatedAt
+  started_at  DateTime?           // 검증 시작
+  completed_at DateTime?          // 검증 완료
+
+  // Relations
+  product     Product             @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  verifier    User?               @relation("VerifierVerifications", fields: [verifier_id], references: [id], onDelete: SetNull)
+
+  @@index([product_id])
+  @@index([verifier_id])
+  @@index([status])
+  @@index([level])
+  @@index([created_at])
+  @@map("verifications")
+}
+
+// ============================================================================
+// ADDITIONAL MODELS (Phase 2 준비)
+// ============================================================================
+
+model CustomRequest {
+  id          String    @id @default(uuid()) @db.Uuid
+  buyer_id    String    @db.Uuid
+
+  // 요구사항
+  title       String
+  description String    @db.Text
+  category    ProductCategory
+
+  // 예산 및 기한
+  budget_min  Decimal?  @db.Decimal(10, 2)
+  budget_max  Decimal?  @db.Decimal(10, 2)
+  currency    Currency  @default(USD)
+  deadline    DateTime?
+
+  // 상태
+  status      String    @default("open") // open, in_progress, completed, cancelled
+
+  // 타임스탬프
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  @@index([buyer_id])
+  @@index([status])
+  @@index([created_at])
+  @@map("custom_requests")
+}
+
+model Notification {
+  id          String    @id @default(uuid()) @db.Uuid
+  user_id     String    @db.Uuid
+
+  // 알림 내용
+  type        String    // order, verification, review, message
+  title       String
+  message     String    @db.Text
+
+  // 링크
+  link        String?
+
+  // 상태
+  read        Boolean   @default(false)
+
+  // 타임스탬프
+  created_at  DateTime  @default(now())
+
+  @@index([user_id])
+  @@index([read])
+  @@index([created_at])
+  @@map("notifications")
+}
