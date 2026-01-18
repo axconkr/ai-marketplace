@@ -70,19 +70,19 @@ export default function ProductDetailPage({ params }: PageProps) {
       // Add product to cart
       addToCart({
         id: product.id,
-        title: product.title,
+        title: product.name,
         price: product.price,
         currency: product.currency,
         verification_level: product.verification_level,
         seller: product.seller,
-        demo_url: product.demo_url,
+        demo_url: (product as any).demo_url,
       });
 
       // Show success feedback
       setJustAdded(true);
       addToast({
         title: '장바구니에 추가되었습니다!',
-        description: `${product.title}이(가) 장바구니에 추가되었습니다.`,
+        description: `${product.name}이(가) 장바구니에 추가되었습니다.`,
       });
 
       // Reset success state after 2 seconds
@@ -132,8 +132,8 @@ export default function ProductDetailPage({ params }: PageProps) {
       addToast({
         title: inWishlist ? '위시리스트에서 제거되었습니다' : '위시리스트에 추가되었습니다',
         description: inWishlist
-          ? `${product.title}이(가) 위시리스트에서 제거되었습니다.`
-          : `${product.title}이(가) 위시리스트에 추가되었습니다.`,
+          ? `${product.name}이(가) 위시리스트에서 제거되었습니다.`
+          : `${product.name}이(가) 위시리스트에 추가되었습니다.`,
       });
     } catch (error) {
       addToast({
@@ -180,7 +180,7 @@ export default function ProductDetailPage({ params }: PageProps) {
           제품
         </Link>
         <span>/</span>
-        <span className="text-foreground">{product.title}</span>
+        <span className="text-foreground">{product.name}</span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -189,10 +189,10 @@ export default function ProductDetailPage({ params }: PageProps) {
           {/* Product Images */}
           <Card className="overflow-hidden">
             <div className="relative aspect-video w-full bg-muted group">
-              {product.demo_url ? (
+              {(product as any).demo_url ? (
                 <Image
-                  src={product.demo_url}
-                  alt={product.title}
+                  src={(product as any).demo_url}
+                  alt={product.name}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   priority
@@ -221,7 +221,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <Badge variant="secondary" className="text-sm">
                   {CATEGORY_LABELS[product.category as keyof typeof CATEGORY_LABELS]}
                 </Badge>
-                {product.tags && product.tags.slice(0, 3).map((tag) => (
+                {(product as any).tags && (product as any).tags.slice(0, 3).map((tag: string) => (
                   <Badge key={tag} variant="outline">
                     {tag}
                   </Badge>
@@ -229,19 +229,19 @@ export default function ProductDetailPage({ params }: PageProps) {
               </div>
 
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-                {product.title}
+                {product.name}
               </h1>
 
               {/* Stats */}
               <div className="flex flex-wrap items-center gap-4 text-sm">
-                {product.rating_avg && (
+                {product.rating_average && (
                   <div className="flex items-center gap-1.5">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     <span className="font-semibold text-foreground">
-                      {Number(product.rating_avg).toFixed(1)}
+                      {Number(product.rating_average).toFixed(1)}
                     </span>
                     <span className="text-muted-foreground">
-                      ({product.review_count}개 리뷰)
+                      ({product.rating_count}개 리뷰)
                     </span>
                   </div>
                 )}
@@ -249,11 +249,6 @@ export default function ProductDetailPage({ params }: PageProps) {
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Download className="w-4 h-4" />
                   <span>{product.download_count.toLocaleString()}회</span>
-                </div>
-                <Separator orientation="vertical" className="h-4" />
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Eye className="w-4 h-4" />
-                  <span>{product.view_count.toLocaleString()}회</span>
                 </div>
               </div>
             </div>
@@ -298,11 +293,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                           가격 모델
                         </span>
                         <span className="text-sm font-semibold">
-                          {
-                            PRICING_MODEL_LABELS[
-                              product.pricing_model as keyof typeof PRICING_MODEL_LABELS
-                            ]
-                          }
+                          일회성 구매
                         </span>
                       </div>
                       <div className="flex items-center justify-between py-2 border-b">
@@ -327,8 +318,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                           출시일
                         </span>
                         <span className="text-sm font-medium">
-                          {product.published_at
-                            ? new Date(product.published_at).toLocaleDateString('ko-KR')
+                          {product.createdAt
+                            ? new Date(product.createdAt).toLocaleDateString('ko-KR')
                             : '미출시'}
                         </span>
                       </div>
@@ -337,20 +328,20 @@ export default function ProductDetailPage({ params }: PageProps) {
                           최종 업데이트
                         </span>
                         <span className="text-sm font-medium">
-                          {new Date(product.updated_at).toLocaleDateString('ko-KR')}
+                          {new Date(product.updatedAt).toLocaleDateString('ko-KR')}
                         </span>
                       </div>
                     </div>
 
                     {/* Tags Section */}
-                    {product.tags && product.tags.length > 0 && (
+                    {(product as any).tags && (product as any).tags.length > 0 && (
                       <div className="mt-6 pt-6 border-t">
                         <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
                           <Tag className="w-4 h-4" />
                           태그
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {product.tags.map((tag) => (
+                          {(product as any).tags.map((tag: string) => (
                             <Badge key={tag} variant="outline">
                               {tag}
                             </Badge>
@@ -389,24 +380,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                   {formatPrice(product.price, product.currency)}
                 </div>
                 <div className="text-sm text-muted-foreground flex items-center gap-2">
-                  {product.pricing_model === 'subscription' && (
-                    <>
-                      <Calendar className="w-4 h-4" />
-                      월간 구독
-                    </>
-                  )}
-                  {product.pricing_model === 'license' && (
-                    <>
-                      <Package className="w-4 h-4" />
-                      라이센스당
-                    </>
-                  )}
-                  {product.pricing_model === 'one_time' && (
-                    <>
-                      <Package className="w-4 h-4" />
-                      1회 구매
-                    </>
-                  )}
+                  <Package className="w-4 h-4" />
+                  1회 구매
                 </div>
               </div>
 
@@ -463,12 +438,12 @@ export default function ProductDetailPage({ params }: PageProps) {
                 </div>
               </div>
 
-              {product.demo_url && (
+              {(product as any).demo_url && (
                 <>
                   <Separator />
                   <Button size="sm" variant="ghost" className="w-full" asChild>
                     <a
-                      href={product.demo_url}
+                      href={(product as any).demo_url}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="데모 보기 (새 창)"

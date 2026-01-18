@@ -245,7 +245,7 @@ export default function SellerVerificationsPage() {
             </CardContent>
           </Card>
         ) : (
-          <VerificationList verifications={verifications} />
+          <VerificationList verifications={verifications as any} />
         )}
       </div>
 

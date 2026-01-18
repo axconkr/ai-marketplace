@@ -207,7 +207,7 @@ export default function AnalyticsPage() {
                         {index + 1}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{product.title}</p>
+                        <p className="font-medium text-gray-900 truncate">{product.name}</p>
                         <p className="text-sm text-gray-500">
                           {product.orders}건 주문 • {product.conversionRate.toFixed(1)}% 전환율
                         </p>

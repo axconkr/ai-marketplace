@@ -258,7 +258,7 @@ export default function SellerSettlementsPage() {
             </div>
 
             {/* Revenue Breakdown */}
-            <RevenueBreakdownChart data={revenueBreakdown} loading={loading} />
+            {revenueBreakdown && <RevenueBreakdownChart data={revenueBreakdown} loading={loading} />}
 
             {/* Order Count Chart */}
             <OrderCountChart data={monthlyData} loading={loading} />
