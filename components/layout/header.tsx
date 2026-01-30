@@ -11,6 +11,7 @@ import { LogoutButton } from '@/components/auth/logout-button';
 import { useAuth } from '@/lib/auth-context';
 import { useWishlist } from '@/hooks/useWishlist';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { UserRole } from '@/src/lib/auth/types';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -21,7 +22,7 @@ export function Header() {
   // Navigation items based on user role
   const navItems = [
     { href: '/products', label: '제품', roles: ['user', 'seller', 'admin'] },
-    ...(user?.role === 'service_provider' || user?.role === 'admin'
+    ...(user?.role === UserRole.SELLER || user?.role === UserRole.ADMIN
       ? [{ href: '/dashboard', label: '대시보드', roles: ['seller', 'admin'] }]
       : []
     ),
@@ -85,7 +86,7 @@ export function Header() {
                 <User className="h-4 w-4" />
                 <span className="text-sm font-medium">{user.name || user.email}</span>
                 <span className="text-xs text-muted-foreground">
-                  ({user.role === 'service_provider' ? '판매자' : user.role === 'admin' ? '관리자' : '구매자'})
+                  ({user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : '구매자'})
                 </span>
               </div>
               <Button variant="ghost" size="sm" asChild>
@@ -127,7 +128,7 @@ export function Header() {
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{user.name || user.email}</span>
                   <span className="text-xs text-muted-foreground">
-                    {user.role === 'service_provider' ? '판매자' : user.role === 'admin' ? '관리자' : '구매자'}
+                    {user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : '구매자'}
                   </span>
                 </div>
               </div>
