@@ -68,7 +68,8 @@ const config: Config = {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'var(--font-noto-kr)', 'system-ui', 'sans-serif'],
+        korean: ['var(--font-noto-kr)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'monospace'],
       },
       fontSize: {

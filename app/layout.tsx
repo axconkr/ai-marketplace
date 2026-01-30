@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_KR } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/contexts/cart-context';
 import { ToastProvider } from '@/components/ui/toast';
@@ -10,6 +10,14 @@ const inter = Inter({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
+});
+
+const notoSansKR = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: ['400', '500', '700'],
+  variable: '--font-noto-kr',
+  display: 'swap',
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -64,7 +72,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={inter.variable} suppressHydrationWarning>
+      <body className={`${inter.variable} ${notoSansKR.variable}`} suppressHydrationWarning>
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>
