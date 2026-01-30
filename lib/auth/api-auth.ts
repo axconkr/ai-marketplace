@@ -139,7 +139,7 @@ export function isAdmin(payload: JWTPayload | null): boolean {
  */
 export function isServiceProvider(payload: JWTPayload | null): boolean {
   return (
-    payload?.role === UserRole.SERVICE_PROVIDER ||
+    payload?.role === UserRole.SELLER ||
     payload?.role === UserRole.ADMIN
   );
 }
@@ -149,7 +149,7 @@ export function isServiceProvider(payload: JWTPayload | null): boolean {
  */
 export function isClient(payload: JWTPayload | null): boolean {
   return (
-    payload?.role === UserRole.CLIENT || payload?.role === UserRole.ADMIN
+    payload?.role === UserRole.BUYER || payload?.role === UserRole.ADMIN
   );
 }
 
