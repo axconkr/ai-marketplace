@@ -1,49 +1,30 @@
-/**
- * JWT Token Verification Utility
- * For API route authentication
- */
-
-import jwt from 'jsonwebtoken';
 import { NextRequest } from 'next/server';
+import { AuthTokenPayload } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 
-export interface TokenPayload {
-  userId: string;
-  email: string;
-  role: string;
+export function verifyToken(request: NextRequest): AuthTokenPayload | null {
+  const token = 
+    request.cookies.get('accessToken')?.value ||
+    request.headers.get('authorization')?.replace('Bearer ', '');
+  
+  if (!token) return null;
+  
+  return null;
 }
 
-/**
- * Extract and verify JWT token from request
- */
-export function verifyToken(request: NextRequest): TokenPayload | null {
-  try {
-    const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return null;
-    }
-
-    const token = authHeader.substring(7);
-    const secret = process.env.JWT_SECRET;
-
-    if (!secret) {
-      throw new Error('JWT_SECRET not configured');
-    }
-
-    const decoded = jwt.verify(token, secret) as TokenPayload;
-    return decoded;
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return null;
-  }
-}
-
-/**
- * Check if user has required role
- */
-export function hasRole(
-  user: TokenPayload | null,
-  roles: string[]
-): boolean {
+export function hasRole(user: AuthTokenPayload | null, roles: string[]): boolean {
   if (!user) return false;
-  return roles.includes(user.role);
+  
+  const roleMap: Record<string, UserRole> = {
+    'admin': UserRole.ADMIN,
+    'seller': UserRole.SELLER,
+    'service_provider': UserRole.SELLER,
+    'buyer': UserRole.BUYER,
+    'user': UserRole.BUYER,
+  };
+  
+  return roles.some(role => {
+    const mappedRole = roleMap[role] || role;
+    return user.role === mappedRole;
+  });
 }
