@@ -34,18 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = () => {
-      const token = localStorage.getItem('accessToken');
       const storedUser = localStorage.getItem('userInfo');
 
-      if (token && storedUser) {
+      if (storedUser) {
         try {
           const parsed = JSON.parse(storedUser);
           setUser(parsed);
         } catch (error) {
           console.error('Failed to parse user info:', error);
           localStorage.removeItem('userInfo');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
         }
       }
       setIsLoading(false);
@@ -79,16 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiFetch<{
         user: User;
-        accessToken: string;
-        refreshToken: string;
       }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
       }, { skipAuth: true });
 
-      // Store tokens and user info
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      // Store user info
       localStorage.setItem('userInfo', JSON.stringify(response.user));
 
       // Update state
@@ -118,16 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await apiFetch<{
         user: User;
-        accessToken: string;
-        refreshToken: string;
       }>('/auth/register', {
         method: 'POST',
         body: JSON.stringify({ email, password, name, role }),
       }, { skipAuth: true });
 
-      // Store tokens and user info
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('refreshToken', response.refreshToken);
+      // Store user info
       localStorage.setItem('userInfo', JSON.stringify(response.user));
 
       // Update state
@@ -156,8 +145,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Logout error:', error);
     } finally {
       // Clear local storage regardless of API response
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('userInfo');
 
       // Update state
@@ -189,8 +176,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to refresh user:', error);
       // If refresh fails, clear auth state
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('userInfo');
       setUser(null);
       window.dispatchEvent(new Event('authStateChanged'));

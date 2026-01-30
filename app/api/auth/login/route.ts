@@ -1,3 +1,4 @@
+import { UserRole } from '@/src/lib/auth/types';
 /**
  * User Login API Endpoint
  * POST /api/auth/login
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     const { accessToken, refreshToken } = generateTokenPair({
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as UserRole,
       name: user.name || undefined,
     });
 
@@ -78,10 +79,8 @@ export async function POST(request: NextRequest) {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role,
+        role: user.role as UserRole,
       },
-      token: accessToken,
-      refreshToken,
     });
 
     // Set access token cookie (7 days)

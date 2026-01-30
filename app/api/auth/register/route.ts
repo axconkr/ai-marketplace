@@ -1,3 +1,4 @@
+import { UserRole } from '@/src/lib/auth/types';
 /**
  * User Registration API Endpoint
  * POST /api/auth/register
@@ -16,7 +17,7 @@ const registerSchema = z.object({
   name: z.string().min(1, 'Name is required').optional(),
   phone: z.string().regex(/^[0-9]{3}-[0-9]{4}-[0-9]{4}$/, 'Phone number must be in format 010-1234-5678').optional().or(z.literal('')),
   kakao_id: z.string().optional().or(z.literal('')),
-  role: z.enum(['user', 'seller', 'verifier', 'admin']).default('user'),
+  role: z.enum(['admin', 'seller', 'buyer', 'verifier']).default('buyer'),
 });
 
 export async function POST(request: NextRequest) {
@@ -46,8 +47,8 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         name: validatedData.name,
-        phone: validatedData.phone,
-        kakao_id: validatedData.kakao_id,
+        phone: validatedData.phone || null,
+        kakao_id: validatedData.kakao_id || null,
         role: validatedData.role,
       },
       select: {
@@ -65,7 +66,7 @@ export async function POST(request: NextRequest) {
     const { accessToken, refreshToken } = generateTokenPair({
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role as UserRole,
       name: user.name || undefined,
     });
 
@@ -85,10 +86,8 @@ export async function POST(request: NextRequest) {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
+          role: user.role as UserRole,
         },
-        token: accessToken, // Keep 'token' for backward compatibility
-        refreshToken,
       },
       { status: 201 }
     );
