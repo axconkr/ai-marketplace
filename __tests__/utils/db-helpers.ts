@@ -45,15 +45,14 @@ export async function closeTestDatabase() {
  * Clean all test data from database
  */
 export async function cleanDatabase() {
-  const prisma = getTestPrismaClient()
+   const prisma = getTestPrismaClient()
 
-  // Delete in order to respect foreign key constraints
-  await prisma.verification.deleteMany()
-  await prisma.settlement.deleteMany()
-  await prisma.order.deleteMany()
-  await prisma.product.deleteMany()
-  await prisma.sellerProfile.deleteMany()
-  await prisma.user.deleteMany()
+   // Delete in order to respect foreign key constraints
+   await prisma.verification.deleteMany()
+   await prisma.settlement.deleteMany()
+   await prisma.order.deleteMany()
+   await prisma.product.deleteMany()
+   await prisma.user.deleteMany()
 }
 
 /**
@@ -92,140 +91,139 @@ export async function seedUsers(count: number = 5) {
 
 /**
  * Seed test seller profiles
+ * Note: Seller profiles are stored as User records with role='SELLER'
+ * This function is kept for backward compatibility but returns empty array
  */
 export async function seedSellerProfiles(userIds: string[]) {
-  const prisma = getTestPrismaClient()
-  const profiles = []
-
-  for (let i = 0; i < userIds.length; i++) {
-    const profile = await prisma.sellerProfile.create({
-      data: {
-        userId: userIds[i],
-        businessName: `Test Business ${i}`,
-        businessNumber: `${100 + i}-45-67890`,
-        businessEmail: `business-${i}@example.com`,
-        phoneNumber: `010-1234-${5678 + i}`,
-        bankName: 'Test Bank',
-        accountNumber: `1234567890${i}`,
-        accountHolder: `Test Holder ${i}`,
-        isVerified: i % 2 === 0,
-        verifiedAt: i % 2 === 0 ? new Date() : null,
-      },
-    })
-    profiles.push(profile)
-  }
-
-  return profiles
+   // Seller profiles are managed through User model with role='SELLER'
+   // No separate sellerProfile model exists
+   return []
 }
 
 /**
  * Seed test products
  */
 export async function seedProducts(sellerIds: string[], count: number = 10) {
-  const prisma = getTestPrismaClient()
-  const products = []
+   const prisma = getTestPrismaClient()
+   const products = []
 
-  const categories = ['N8N_TEMPLATE', 'MAKE_SCENARIO', 'ZAPIER_ZAP', 'AI_AGENT', 'CUSTOM_SOLUTION']
+   const categories = ['N8N_TEMPLATE', 'MAKE_SCENARIO', 'ZAPIER_ZAP', 'AI_AGENT', 'CUSTOM_SOLUTION']
 
-  for (let i = 0; i < count; i++) {
-    const product = await prisma.product.create({
-      data: {
-        sellerId: sellerIds[i % sellerIds.length],
-        title: `Test Product ${i}`,
-        description: `This is a test product description ${i}`,
-        category: categories[i % categories.length],
-        price: (i + 1) * 10000,
-        status: i % 5 === 0 ? 'PENDING' : 'ACTIVE',
-      },
-    })
-    products.push(product)
-  }
+   for (let i = 0; i < count; i++) {
+     const product = await prisma.product.create({
+       data: {
+         seller_id: sellerIds[i % sellerIds.length],
+         name: `Test Product ${i}`,
+         description: `This is a test product description ${i}`,
+         category: categories[i % categories.length],
+         price: (i + 1) * 10000,
+         status: i % 5 === 0 ? 'draft' : 'active',
+         currency: 'KRW',
+       },
+     })
+     products.push(product)
+   }
 
-  return products
+   return products
 }
 
 /**
  * Seed test orders
  */
 export async function seedOrders(
-  buyerIds: string[],
-  sellerIds: string[],
-  productIds: string[],
-  count: number = 10
+   buyerIds: string[],
+   sellerIds: string[],
+   productIds: string[],
+   count: number = 10
 ) {
-  const prisma = getTestPrismaClient()
-  const orders = []
+   const prisma = getTestPrismaClient()
+   const orders = []
 
-  const statuses = ['PENDING', 'COMPLETED', 'CANCELLED', 'REFUNDED']
-  const paymentMethods = ['CREDIT_CARD', 'BANK_TRANSFER', 'PAYPAL']
+   const statuses: Array<'PENDING' | 'PAID' | 'COMPLETED' | 'REFUNDED' | 'CANCELLED' | 'FAILED'> = [
+     'PENDING',
+     'COMPLETED',
+     'CANCELLED',
+     'REFUNDED',
+   ]
 
-  for (let i = 0; i < count; i++) {
-    const order = await prisma.order.create({
-      data: {
-        buyerId: buyerIds[i % buyerIds.length],
-        sellerId: sellerIds[i % sellerIds.length],
-        productId: productIds[i % productIds.length],
-        amount: (i + 1) * 10000,
-        status: statuses[i % statuses.length],
-        paymentMethod: paymentMethods[i % paymentMethods.length],
-      },
-    })
-    orders.push(order)
-  }
+   for (let i = 0; i < count; i++) {
+     const order = await prisma.order.create({
+       data: {
+         buyer_id: buyerIds[i % buyerIds.length],
+         product_id: productIds[i % productIds.length],
+         amount: (i + 1) * 10000,
+         currency: 'KRW',
+         platform_fee: (i + 1) * 1500,
+         seller_amount: (i + 1) * 8500,
+         status: statuses[i % statuses.length],
+       },
+     })
+     orders.push(order)
+   }
 
-  return orders
+   return orders
 }
 
 /**
  * Seed test settlements
  */
 export async function seedSettlements(orderIds: string[], sellerIds: string[]) {
-  const prisma = getTestPrismaClient()
-  const settlements = []
+   const prisma = getTestPrismaClient()
+   const settlements = []
 
-  for (let i = 0; i < orderIds.length; i++) {
-    // Only create settlements for completed orders
-    const settlement = await prisma.settlement.create({
-      data: {
-        orderId: orderIds[i],
-        sellerId: sellerIds[i % sellerIds.length],
-        amount: (i + 1) * 9000, // 90% of order amount (10% platform fee)
-        status: i % 3 === 0 ? 'PENDING' : 'COMPLETED',
-        scheduledAt: new Date(),
-        completedAt: i % 3 === 0 ? null : new Date(),
-      },
-    })
-    settlements.push(settlement)
-  }
+   for (let i = 0; i < orderIds.length; i++) {
+     // Only create settlements for completed orders
+     const settlement = await prisma.settlement.create({
+       data: {
+         seller_id: sellerIds[i % sellerIds.length],
+         total_amount: (i + 1) * 10000,
+         platform_fee: (i + 1) * 1500,
+         payout_amount: (i + 1) * 8500,
+         currency: 'KRW',
+         status: i % 3 === 0 ? 'PENDING' : 'PAID',
+         period_start: new Date(new Date().setDate(1)),
+         period_end: new Date(),
+       },
+     })
+     settlements.push(settlement)
+   }
 
-  return settlements
+   return settlements
 }
 
 /**
  * Seed test verifications
  */
 export async function seedVerifications(productIds: string[]) {
-  const prisma = getTestPrismaClient()
-  const verifications = []
+   const prisma = getTestPrismaClient()
+   const verifications = []
 
-  const levels = ['LEVEL_0', 'LEVEL_1']
-  const statuses = ['PENDING', 'IN_PROGRESS', 'COMPLETED', 'REJECTED']
+   const levels = [1, 2]
+   const statuses: Array<'PENDING' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'> = [
+     'PENDING',
+     'IN_PROGRESS',
+     'COMPLETED',
+     'REJECTED',
+   ]
 
-  for (let i = 0; i < productIds.length; i++) {
-    const verification = await prisma.verification.create({
-      data: {
-        productId: productIds[i],
-        level: levels[i % levels.length],
-        status: statuses[i % statuses.length],
-        verifierId: i % 2 === 0 ? `verifier-${i}` : null,
-        assignedAt: i % 2 === 0 ? new Date() : null,
-        completedAt: i % 4 === 0 ? new Date() : null,
-      },
-    })
-    verifications.push(verification)
-  }
+   for (let i = 0; i < productIds.length; i++) {
+     const verification = await prisma.verification.create({
+       data: {
+         product_id: productIds[i],
+         level: levels[i % levels.length],
+         status: statuses[i % statuses.length],
+         verifier_id: i % 2 === 0 ? `verifier-${i}` : null,
+         fee: 5000,
+         platform_share: 2500,
+         verifier_share: 2500,
+         assigned_at: i % 2 === 0 ? new Date() : null,
+         completed_at: i % 4 === 0 ? new Date() : null,
+       },
+     })
+     verifications.push(verification)
+   }
 
-  return verifications
+   return verifications
 }
 
 // ============================================================================

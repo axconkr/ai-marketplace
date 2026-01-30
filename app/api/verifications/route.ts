@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth, requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { runLevel0Verification } from '@/lib/services/verification/level0';
 import { requestLevel1Verification } from '@/lib/services/verification/level1';
 import { processVerificationFee } from '@/lib/services/verification/payment';
@@ -18,7 +19,7 @@ import { VerificationStatus } from '@prisma/client';
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user - sellers and admins can request verification
-    const user = await requireRole(request, ['seller', 'admin']);
+    const user = await requireRole(request, [UserRole.SELLER, UserRole.ADMIN]);
 
     const body = await request.json();
     const { productId, level } = body;
@@ -86,11 +87,17 @@ export async function POST(request: NextRequest) {
             : 'Product failed automatic verification. Please fix the issues.',
       });
     }
-
     // Handle Level 1+ (requires payment)
     if (level >= 1) {
       // Create payment intent
       const paymentIntent = await processVerificationFee(productId, level, user.userId);
+
+      if (!paymentIntent) {
+        return NextResponse.json(
+          { error: 'Failed to create payment intent' },
+          { status: 500 }
+        );
+      }
 
       // Create verification request (will be activated after payment)
       verification = await requestLevel1Verification(productId);
@@ -105,7 +112,6 @@ export async function POST(request: NextRequest) {
         message: 'Payment required to proceed with verification',
       });
     }
-
     return NextResponse.json({ error: 'Invalid level' }, { status: 400 });
   } catch (error: any) {
     console.error('Error requesting verification:', error);

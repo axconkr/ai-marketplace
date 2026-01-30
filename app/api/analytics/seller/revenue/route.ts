@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const period = (searchParams.get('period') || '30d') as '7d' | '30d' | '90d' | '1y';
 
-    const analytics = await getSellerAnalytics(user.id, period);
+    const analytics = await getSellerAnalytics(user.userId, period);
 
     const total = analytics.timeline.reduce((sum, item) => sum + item.revenue, 0);
     const average = analytics.timeline.length > 0

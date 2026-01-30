@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const actions = await getPendingActions(user.id);
+    const actions = await getPendingActions(user.userId);
 
     return NextResponse.json(actions);
   } catch (error) {

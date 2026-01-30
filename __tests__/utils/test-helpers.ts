@@ -5,7 +5,7 @@
 
 import { render, RenderOptions, RenderResult } from '@testing-library/react'
 import { ReactElement, ReactNode } from 'react'
-import { User, SellerProfile } from '@prisma/client'
+import { User } from '@prisma/client'
 
 // ============================================================================
 // Type Definitions
@@ -16,13 +16,6 @@ export interface MockUser extends Partial<User> {
   email: string
   name: string | null
   role: 'BUYER' | 'SELLER' | 'ADMIN'
-}
-
-export interface MockSellerProfile extends Partial<SellerProfile> {
-  id: string
-  userId: string
-  businessName: string
-  businessNumber: string | null
 }
 
 // ============================================================================
@@ -38,32 +31,7 @@ export function createMockUser(overrides?: Partial<MockUser>): MockUser {
     email: `test-${Date.now()}@example.com`,
     name: 'Test User',
     role: 'BUYER',
-    emailVerified: new Date(),
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    ...overrides,
-  }
-}
-
-/**
- * Create a mock seller profile for testing
- */
-export function createMockSellerProfile(
-  userId: string,
-  overrides?: Partial<MockSellerProfile>
-): MockSellerProfile {
-  return {
-    id: `seller-${Math.random().toString(36).substr(2, 9)}`,
-    userId,
-    businessName: 'Test Business',
-    businessNumber: '123-45-67890',
-    businessEmail: 'business@example.com',
-    phoneNumber: '010-1234-5678',
-    bankName: 'Test Bank',
-    accountNumber: '1234567890',
-    accountHolder: 'Test Holder',
-    isVerified: false,
-    verifiedAt: null,
+    emailVerified: true,
     createdAt: new Date(),
     updatedAt: new Date(),
     ...overrides,
@@ -113,7 +81,7 @@ export function createMockOrder(overrides?: any) {
 /**
  * Create a mock Prisma client for testing
  */
-export function createMockPrismaClient() {
+export function createMockPrismaClient(): any {
   return {
     user: {
       findUnique: jest.fn(),
@@ -140,6 +108,8 @@ export function createMockPrismaClient() {
       update: jest.fn(),
       delete: jest.fn(),
       count: jest.fn(),
+      groupBy: jest.fn(),
+      aggregate: jest.fn(),
     },
     order: {
       findUnique: jest.fn(),

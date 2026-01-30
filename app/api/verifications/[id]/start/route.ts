@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { startVerificationReview } from '@/lib/services/verification/review';
 
 export async function PATCH(
@@ -14,7 +15,7 @@ export async function PATCH(
     const verificationId = params.id;
 
     // Only verifiers and admins can start reviews
-    const user = await requireRole(request, ['verifier', 'admin']);
+    const user = await requireRole(request, [UserRole.VERIFIER, UserRole.ADMIN]);
 
     const verification = await startVerificationReview(verificationId, user.userId);
 

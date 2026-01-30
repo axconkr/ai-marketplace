@@ -57,7 +57,7 @@ interface RevenueBreakdown {
  * PROTECTED: Only SERVICE_PROVIDER and ADMIN can access
  */
 export default function SellerSettlementsPage() {
-  useRequireRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  useRequireRole([UserRole.SELLER, UserRole.ADMIN]);
 
   const [settlements, setSettlements] = useState<SettlementWithItems[]>([]);
   const [currentEstimate, setCurrentEstimate] = useState<CurrentEstimate | null>(null);

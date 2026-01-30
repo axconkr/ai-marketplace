@@ -14,8 +14,8 @@ import {
   createRateLimitResponse,
   addRateLimitHeaders,
   UserRole,
-} from '@/lib/auth';
-import { authConfig } from '@/lib/auth/config';
+} from '@/src/lib/auth';
+import { authConfig } from '@/src/lib/auth/config';
 import { prisma } from '@/lib/db'; // Assuming Prisma setup
 
 export async function POST(request: NextRequest) {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         password: hashedPassword,
         name: validatedData.name,
-        role: validatedData.role || UserRole.USER,
+        role: validatedData.role || UserRole.BUYER,
         emailVerified: false,
       },
       select: {

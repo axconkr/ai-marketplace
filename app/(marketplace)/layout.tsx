@@ -92,7 +92,7 @@ function MarketplaceHeader() {
           </Button>
 
           {/* Show "Sell Product" button only for sellers */}
-          {(userRole === UserRole.SERVICE_PROVIDER || userRole === UserRole.ADMIN) && (
+          {(userRole === UserRole.SELLER || userRole === UserRole.ADMIN) && (
             <Button variant="default" asChild className="hidden md:flex">
               <Link href="/products/new">Sell Product</Link>
             </Button>

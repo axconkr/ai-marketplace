@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { assignLevel1Verification } from '@/lib/services/verification/level1';
 
 export async function PATCH(
@@ -14,7 +15,7 @@ export async function PATCH(
     const verificationId = params.id;
 
     // Only admins can assign verifications
-    const user = await requireRole(request, ['admin']);
+    const user = await requireRole(request, [UserRole.ADMIN]);
 
     const body = await request.json();
     const { verifierId } = body;

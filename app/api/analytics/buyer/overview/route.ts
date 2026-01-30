@@ -6,12 +6,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole, isClient } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
   try {
     // Require user, client or admin role
-    const authUser = await requireRole(request, ['user', 'client', 'admin']);
+    const authUser = await requireRole(request, [UserRole.BUYER, UserRole.ADMIN]);
 
     // Verify user is a client
     if (!isClient(authUser)) {

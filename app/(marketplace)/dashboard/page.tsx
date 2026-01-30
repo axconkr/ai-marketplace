@@ -65,7 +65,7 @@ export default function Dashboard() {
         if (role === UserRole.ADMIN) {
           console.log('✅ Setting userRole to: admin');
           setUserRole('admin');
-        } else if (role === UserRole.SERVICE_PROVIDER) {
+        } else if (role === UserRole.SELLER) {
           console.log('✅ Setting userRole to: service_provider');
           setUserRole('service_provider');
         } else {

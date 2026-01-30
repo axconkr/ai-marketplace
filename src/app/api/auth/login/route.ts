@@ -15,8 +15,8 @@ import {
   addRateLimitHeaders,
   needsRehash,
   hashPassword,
-} from '@/lib/auth';
-import { authConfig } from '@/lib/auth/config';
+} from '@/src/lib/auth';
+import { authConfig } from '@/src/lib/auth/config';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {

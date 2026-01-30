@@ -42,59 +42,59 @@ const routeConfigs: RouteConfig[] = [
   {
     pattern: /^\/checkout\/.+$/,
     requireAuth: true,
-    allowedRoles: [UserRole.CLIENT, UserRole.ADMIN],
+    allowedRoles: [UserRole.BUYER, UserRole.ADMIN],
   },
 
   // ===== Seller Routes (SERVICE_PROVIDER role) =====
   {
     pattern: /^\/dashboard\/products$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/products\/new$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/products\/[^/]+\/edit$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/analytics$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/settlements$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/orders$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/verifications$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/dashboard\/settings\/bank-account$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/products\/create$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
   {
     pattern: /^\/products\/new$/,
     requireAuth: true,
-    allowedRoles: [UserRole.SERVICE_PROVIDER, UserRole.ADMIN],
+    allowedRoles: [UserRole.SELLER, UserRole.ADMIN],
   },
 
   // ===== Verifier Routes =====
@@ -171,9 +171,9 @@ export async function middleware(request: NextRequest) {
         !routeConfig.allowedRoles.includes(payload.role as UserRole)
       ) {
         // Redirect to appropriate page based on role
-        if (payload.role === UserRole.CLIENT) {
+        if (payload.role === UserRole.BUYER) {
           return NextResponse.redirect(new URL('/orders', request.url));
-        } else if (payload.role === UserRole.SERVICE_PROVIDER) {
+        } else if (payload.role === UserRole.SELLER) {
           return NextResponse.redirect(
             new URL('/dashboard/products', request.url)
           );

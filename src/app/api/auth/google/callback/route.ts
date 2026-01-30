@@ -10,7 +10,7 @@ import {
   verifyCsrfToken,
   setSession,
   UserRole,
-} from '@/lib/auth';
+} from '@/src/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {

@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { refreshSession } from '@/lib/auth';
+import { refreshSession } from '@/src/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {

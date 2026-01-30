@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const period = (searchParams.get('period') || '30d') as '7d' | '30d' | '90d' | '1y';
 
-    const customerStats = await getCustomerAnalytics(user.id, period);
+    const customerStats = await getCustomerAnalytics(user.userId, period);
 
     return NextResponse.json(customerStats);
   } catch (error) {

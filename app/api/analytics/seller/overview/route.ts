@@ -1,3 +1,4 @@
+import { UserRole } from '@/src/lib/auth/types';
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole, isServiceProvider } from '@/lib/auth';
 import { getSellerAnalytics } from '@/lib/services/analytics';
@@ -9,7 +10,7 @@ import { getSellerAnalytics } from '@/lib/services/analytics';
 export async function GET(req: NextRequest) {
   try {
     // Require seller, service_provider or admin role
-    const user = await requireRole(req, ['seller', 'service_provider', 'admin']);
+    const user = await requireRole(req, [UserRole.SELLER, UserRole.ADMIN]);
 
     // Verify user is a service provider
     if (!isServiceProvider(user)) {
@@ -24,11 +25,11 @@ export async function GET(req: NextRequest) {
 
     const analytics = await getSellerAnalytics(user.userId, period);
 
-    return NextResponse.json(analytics.summary);
+    return NextResponse.json(analytics);
   } catch (error) {
-    console.error('Analytics overview error:', error);
+    console.error('Seller analytics error:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
+      { error: 'Failed to fetch seller analytics' },
       { status: 500 }
     );
   }

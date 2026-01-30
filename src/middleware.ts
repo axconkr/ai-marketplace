@@ -4,8 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyToken } from '@/lib/auth/jwt';
-import { authConfig } from '@/lib/auth/config';
+import { verifyToken } from '@/src/lib/auth/jwt';
+import { authConfig } from '@/src/lib/auth/config';
 
 // Define protected routes
 const protectedRoutes = ['/dashboard', '/profile', '/settings'];

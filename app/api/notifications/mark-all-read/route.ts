@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = user.id;
+    const userId = user.userId;
 
     await markAllNotificationsAsRead(userId);
 

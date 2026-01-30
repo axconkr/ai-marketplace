@@ -3,7 +3,9 @@
  * Tests for enhanced search filtering capabilities
  */
 
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach } from '@jest/globals';
+import type { ProductSearchParams } from '@/lib/validations/product';
+
 import {
   buildProductWhereClause,
   buildProductOrderBy,
@@ -13,21 +15,9 @@ import {
   getProductRatingRange,
   getVerificationLevelAggregation,
 } from '@/lib/services/product-search';
-import type { ProductSearchParams } from '@/lib/validations/product';
 
-// Mock Prisma client
-jest.mock('@/lib/prisma', () => ({
-  prisma: {
-    product: {
-      findMany: jest.fn(),
-      count: jest.fn(),
-      groupBy: jest.fn(),
-      aggregate: jest.fn(),
-    },
-  },
-}));
-
-import { prisma } from '@/lib/prisma';
+const prismaMock = jest.requireMock('@/lib/prisma') as { prisma: any };
+const mockPrisma = prismaMock.prisma;
 
 describe('Phase 3: Advanced Product Search', () => {
   beforeEach(() => {
@@ -248,8 +238,8 @@ describe('Phase 3: Advanced Product Search', () => {
         },
       ];
 
-      (prisma.product.findMany as jest.Mock).mockResolvedValue(mockProducts);
-      (prisma.product.count as jest.Mock).mockResolvedValue(25);
+      mockPrisma.product.findMany.mockResolvedValue(mockProducts);
+      mockPrisma.product.count.mockResolvedValue(25);
 
       const params: ProductSearchParams = {
         page: 2,
@@ -269,7 +259,7 @@ describe('Phase 3: Advanced Product Search', () => {
         has_prev: true,
       });
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({
           status: 'ACTIVE',
         }),
@@ -281,8 +271,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should execute search with price filter', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         min_price: 2000,
@@ -294,7 +284,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await advancedProductSearch(params);
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({
           price: {
             gte: 2000,
@@ -309,8 +299,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should execute search with rating filter', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         min_rating: 4.5,
@@ -321,7 +311,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await advancedProductSearch(params);
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({
           rating_average: {
             gte: 4.5,
@@ -338,8 +328,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should execute search with multiple filters', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         category: 'ai_agent',
@@ -354,7 +344,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await advancedProductSearch(params);
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith({
+      expect(mockPrisma.product.findMany).toHaveBeenCalledWith({
         where: expect.objectContaining({
           category: 'ai_agent',
           price: {
@@ -377,8 +367,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should calculate correct pagination', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(47);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(47);
 
       const params: ProductSearchParams = {
         page: 1,
@@ -401,7 +391,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
   describe('getProductCategoryAggregation', () => {
     it('should return category counts', async () => {
-      (prisma.product.groupBy as jest.Mock).mockResolvedValue([
+      mockPrisma.product.groupBy.mockResolvedValue([
         { category: 'ai_agent', _count: { id: 15 } },
         { category: 'n8n', _count: { id: 10 } },
         { category: 'make', _count: { id: 8 } },
@@ -417,7 +407,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should filter by search params', async () => {
-      (prisma.product.groupBy as jest.Mock).mockResolvedValue([]);
+      mockPrisma.product.groupBy.mockResolvedValue([]);
 
       const params: ProductSearchParams = {
         min_rating: 4.0,
@@ -428,7 +418,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await getProductCategoryAggregation(params);
 
-      expect(prisma.product.groupBy).toHaveBeenCalledWith({
+      expect(mockPrisma.product.groupBy).toHaveBeenCalledWith({
         by: ['category'],
         where: expect.objectContaining({
           rating_average: {
@@ -449,7 +439,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
   describe('getProductPriceRange', () => {
     it('should return price range', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { price: 1000 },
         _max: { price: 50000 },
       });
@@ -463,7 +453,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should handle null values', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { price: null },
         _max: { price: null },
       });
@@ -477,7 +467,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should filter by search params', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { price: 5000 },
         _max: { price: 20000 },
       });
@@ -491,7 +481,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await getProductPriceRange(params);
 
-      expect(prisma.product.aggregate).toHaveBeenCalledWith({
+      expect(mockPrisma.product.aggregate).toHaveBeenCalledWith({
         where: expect.objectContaining({
           category: 'n8n',
         }),
@@ -507,7 +497,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
   describe('getProductRatingRange', () => {
     it('should return rating range', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { rating_average: 3.0 },
         _max: { rating_average: 5.0 },
       });
@@ -521,7 +511,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should handle null values', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { rating_average: null },
         _max: { rating_average: null },
       });
@@ -535,7 +525,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should filter by search params', async () => {
-      (prisma.product.aggregate as jest.Mock).mockResolvedValue({
+      mockPrisma.product.aggregate.mockResolvedValue({
         _min: { rating_average: 4.0 },
         _max: { rating_average: 5.0 },
       });
@@ -550,7 +540,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await getProductRatingRange(params);
 
-      expect(prisma.product.aggregate).toHaveBeenCalledWith({
+      expect(mockPrisma.product.aggregate).toHaveBeenCalledWith({
         where: expect.objectContaining({
           category: 'ai_agent',
           verification_level: {
@@ -569,7 +559,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
   describe('getVerificationLevelAggregation', () => {
     it('should return verification level counts', async () => {
-      (prisma.product.groupBy as jest.Mock).mockResolvedValue([
+      mockPrisma.product.groupBy.mockResolvedValue([
         { verification_level: 0, _count: { id: 20 } },
         { verification_level: 1, _count: { id: 15 } },
         { verification_level: 2, _count: { id: 10 } },
@@ -587,7 +577,7 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should filter by search params', async () => {
-      (prisma.product.groupBy as jest.Mock).mockResolvedValue([]);
+      mockPrisma.product.groupBy.mockResolvedValue([]);
 
       const params: ProductSearchParams = {
         min_rating: 4.0,
@@ -599,7 +589,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await getVerificationLevelAggregation(params);
 
-      expect(prisma.product.groupBy).toHaveBeenCalledWith({
+      expect(mockPrisma.product.groupBy).toHaveBeenCalledWith({
         by: ['verification_level'],
         where: expect.objectContaining({
           rating_average: {
@@ -621,8 +611,8 @@ describe('Phase 3: Advanced Product Search', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty result sets', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         min_rating: 5.0,
@@ -640,8 +630,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should handle large page numbers', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(100);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(100);
 
       const params: ProductSearchParams = {
         page: 10,
@@ -656,8 +646,8 @@ describe('Phase 3: Advanced Product Search', () => {
     });
 
     it('should handle concurrent filter combinations', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         search: 'automation',
@@ -674,7 +664,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       const result = await advancedProductSearch(params);
 
-      expect(prisma.product.findMany).toHaveBeenCalledWith(
+      expect(mockPrisma.product.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             OR: expect.any(Array),
@@ -702,8 +692,8 @@ describe('Phase 3: Advanced Product Search', () => {
       const findManyPromise = Promise.resolve([]);
       const countPromise = Promise.resolve(0);
 
-      (prisma.product.findMany as jest.Mock).mockReturnValue(findManyPromise);
-      (prisma.product.count as jest.Mock).mockReturnValue(countPromise);
+      mockPrisma.product.findMany.mockReturnValue(findManyPromise);
+      mockPrisma.product.count.mockReturnValue(countPromise);
 
       const params: ProductSearchParams = {
         page: 1,
@@ -713,13 +703,13 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await advancedProductSearch(params);
 
-      expect(prisma.product.findMany).toHaveBeenCalledTimes(1);
-      expect(prisma.product.count).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.product.findMany).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.product.count).toHaveBeenCalledTimes(1);
     });
 
     it('should use optimized field selection', async () => {
-      (prisma.product.findMany as jest.Mock).mockResolvedValue([]);
-      (prisma.product.count as jest.Mock).mockResolvedValue(0);
+      mockPrisma.product.findMany.mockResolvedValue([]);
+      mockPrisma.product.count.mockResolvedValue(0);
 
       const params: ProductSearchParams = {
         page: 1,
@@ -729,8 +719,7 @@ describe('Phase 3: Advanced Product Search', () => {
 
       await advancedProductSearch(params);
 
-      const selectArg = (prisma.product.findMany as jest.Mock).mock.calls[0][0]
-        .select;
+      const selectArg = mockPrisma.product.findMany.mock.calls[0][0].select;
 
       // Verify only necessary fields are selected
       expect(selectArg).toHaveProperty('id');

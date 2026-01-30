@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getGoogleAuthUrl, generateCsrfTokenPair } from '@/lib/auth';
+import { getGoogleAuthUrl, generateCsrfTokenPair } from '@/src/lib/auth';
 import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {

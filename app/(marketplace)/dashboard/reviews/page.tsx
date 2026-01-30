@@ -24,7 +24,7 @@ interface Filters {
 
 export default function SellerReviewsPage() {
   // Require seller role
-  useRequireRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  useRequireRole([UserRole.SELLER, UserRole.ADMIN]);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();

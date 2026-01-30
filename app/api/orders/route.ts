@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
 
-    const orders = await getRecentOrders(user.id, limit);
+    const orders = await getRecentOrders(user.userId, limit);
 
     return NextResponse.json(orders);
   } catch (error) {

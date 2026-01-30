@@ -2,6 +2,20 @@
  * Integration tests for subscription system
  */
 
+// Mock Stripe module BEFORE any imports to prevent Stripe instantiation at module load
+jest.mock('@/src/lib/subscriptions/stripe', () => ({
+  StripeSubscriptionService: {
+    createCheckoutSession: jest.fn(),
+    createPortalSession: jest.fn(),
+    updateSubscription: jest.fn(),
+    cancelSubscription: jest.fn(),
+    reactivateSubscription: jest.fn(),
+    handleWebhook: jest.fn(),
+    syncSubscriptionStatus: jest.fn(),
+  },
+  stripe: {},
+}));
+
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import { PrismaClient } from '@prisma/client';
 import {

@@ -32,7 +32,7 @@ import { STATUS_LABELS } from '@/lib/validations/product';
 
 export default function DashboardProductsPage() {
   // Require service provider or admin role
-  useRequireRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  useRequireRole([UserRole.SELLER, UserRole.ADMIN]);
   const { data: products, isLoading, error } = useMyProducts();
   const deleteMutation = useDeleteProduct();
   const { addToast } = useToast();

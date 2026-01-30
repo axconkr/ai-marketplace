@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { submitVerificationReview } from '@/lib/services/verification/review';
 
 export async function POST(
@@ -14,7 +15,7 @@ export async function POST(
     const verificationId = params.id;
 
     // Only verifiers and admins can submit reviews
-    const user = await requireRole(request, ['verifier', 'admin']);
+    const user = await requireRole(request, [UserRole.VERIFIER, UserRole.ADMIN]);
 
     const body = await request.json();
 

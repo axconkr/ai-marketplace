@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { verifyToken } from '@/lib/auth/verify-token'
+import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth'
 import { handleDatabaseError, formatDatabaseErrorResponse } from '@/lib/database-error-handler'
-
-const prisma = new PrismaClient()
 
 // GET /api/wishlist - Get user's wishlist
 export async function GET(request: NextRequest) {
   try {
-    const decoded = verifyToken(request)
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const user = await requireAuth(request)
 
     const wishlists = await prisma.wishlist.findMany({
-      where: { user_id: decoded.userId },
+      where: { user_id: user.userId },
       include: {
         product: {
           include: {
@@ -44,6 +39,10 @@ export async function GET(request: NextRequest) {
       count: wishlists.length,
     })
   } catch (error) {
+    if (error instanceof Error && (error as any).code === 'MISSING_TOKEN' || (error as any).code === 'INVALID_TOKEN' || (error as any).code === 'INVALID_PAYLOAD') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const dbError = handleDatabaseError(error)
     console.error('Get wishlist error:', {
       message: dbError.message,
@@ -61,11 +60,7 @@ export async function GET(request: NextRequest) {
 // POST /api/wishlist - Add product to wishlist
 export async function POST(request: NextRequest) {
   try {
-    const decoded = verifyToken(request)
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    const user = await requireAuth(request)
     const { productId } = await request.json()
 
     if (!productId) {
@@ -88,7 +83,7 @@ export async function POST(request: NextRequest) {
     const existing = await prisma.wishlist.findUnique({
       where: {
         user_id_product_id: {
-          user_id: decoded.userId,
+          user_id: user.userId,
           product_id: productId,
         },
       },
@@ -104,7 +99,7 @@ export async function POST(request: NextRequest) {
     // Add to wishlist
     const wishlist = await prisma.wishlist.create({
       data: {
-        user_id: decoded.userId,
+        user_id: user.userId,
         product_id: productId,
       },
       include: {
@@ -117,6 +112,10 @@ export async function POST(request: NextRequest) {
       wishlist,
     })
   } catch (error) {
+    if (error instanceof Error && (error as any).code === 'MISSING_TOKEN' || (error as any).code === 'INVALID_TOKEN' || (error as any).code === 'INVALID_PAYLOAD') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const dbError = handleDatabaseError(error)
     console.error('Add to wishlist error:', {
       message: dbError.message,
@@ -134,11 +133,7 @@ export async function POST(request: NextRequest) {
 // DELETE /api/wishlist?productId=xxx - Remove from wishlist
 export async function DELETE(request: NextRequest) {
   try {
-    const decoded = verifyToken(request)
-    if (!decoded) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
+    const user = await requireAuth(request)
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('productId')
 
@@ -152,7 +147,7 @@ export async function DELETE(request: NextRequest) {
     // Delete from wishlist
     await prisma.wishlist.deleteMany({
       where: {
-        user_id: decoded.userId,
+        user_id: user.userId,
         product_id: productId,
       },
     })
@@ -161,6 +156,10 @@ export async function DELETE(request: NextRequest) {
       message: 'Removed from wishlist',
     })
   } catch (error) {
+    if (error instanceof Error && (error as any).code === 'MISSING_TOKEN' || (error as any).code === 'INVALID_TOKEN' || (error as any).code === 'INVALID_PAYLOAD') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const dbError = handleDatabaseError(error)
     console.error('Remove from wishlist error:', {
       message: dbError.message,

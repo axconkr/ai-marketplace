@@ -4,12 +4,13 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { listAvailableVerifications } from '@/lib/services/verification/review';
 
 export async function GET(request: NextRequest) {
   try {
     // Only verifiers and admins can view available verifications
-    const user = await requireRole(request, ['verifier', 'admin']);
+    const user = await requireRole(request, [UserRole.VERIFIER, UserRole.ADMIN]);
 
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get('page') || '1');

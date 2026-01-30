@@ -3,7 +3,6 @@
  * Tests for Stripe payment integration
  */
 
-import Stripe from 'stripe';
 import { StripeProvider } from '@/lib/payment/stripe';
 import {
   CreatePaymentParams,
@@ -15,36 +14,18 @@ import {
   WebhookError,
 } from '@/lib/payment/types';
 
-// Mock Stripe
-jest.mock('stripe');
+const stripeMock = jest.requireMock('stripe') as { default: jest.Mock };
+const mockStripeInstance = stripeMock.default();
 
 describe('StripeProvider', () => {
   let provider: StripeProvider;
-  let mockStripe: jest.Mocked<Stripe>;
+  let mockStripe: typeof mockStripeInstance;
 
   beforeEach(() => {
-    provider = new StripeProvider();
-    mockStripe = (provider as any).stripe = {
-      paymentIntents: {
-        create: jest.fn(),
-        retrieve: jest.fn(),
-        confirm: jest.fn(),
-      },
-      refunds: {
-        create: jest.fn(),
-      },
-      customers: {
-        list: jest.fn(),
-        create: jest.fn(),
-      },
-      webhooks: {
-        constructEvent: jest.fn(),
-      },
-    } as any;
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
+    stripeMock.default.mockReturnValue(mockStripeInstance);
+    mockStripe = mockStripeInstance;
+    provider = new StripeProvider();
   });
 
   describe('createPaymentIntent', () => {

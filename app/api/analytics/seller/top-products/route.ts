@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const period = (searchParams.get('period') || '30d') as '7d' | '30d' | '90d' | '1y';
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const analytics = await getSellerAnalytics(user.id, period);
+    const analytics = await getSellerAnalytics(user.userId, period);
 
     return NextResponse.json({
       products: analytics.products.slice(0, limit)

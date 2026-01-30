@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { claimVerification } from '@/lib/services/verification/claim';
 
 export async function POST(
@@ -14,7 +15,7 @@ export async function POST(
     const verificationId = params.id;
 
     // Only verifiers and admins can claim verifications
-    const user = await requireRole(request, ['verifier', 'admin']);
+    const user = await requireRole(request, [UserRole.VERIFIER, UserRole.ADMIN]);
 
     const verification = await claimVerification(verificationId, user.userId);
 

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const period = (searchParams.get('period') || '30d') as '7d' | '30d' | '90d' | '1y';
 
-    const timeline = await getOrdersTimeline(user.id, period);
+    const timeline = await getOrdersTimeline(user.userId, period);
 
     return NextResponse.json({ data: timeline });
   } catch (error) {

@@ -87,9 +87,9 @@ export function useRequireRole(
 
       if (!roles.includes(userRole)) {
         // Redirect to appropriate page based on user's role
-        if (userRole === UserRole.CLIENT) {
+        if (userRole === UserRole.BUYER) {
           router.push('/orders');
-        } else if (userRole === UserRole.SERVICE_PROVIDER) {
+        } else if (userRole === UserRole.SELLER) {
           router.push('/dashboard/products');
         } else {
           router.push('/');
@@ -112,12 +112,12 @@ export function isAdmin(): boolean {
  * Check if current user is service provider (seller)
  */
 export function isServiceProvider(): boolean {
-  return hasRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  return hasRole([UserRole.SELLER, UserRole.ADMIN]);
 }
 
 /**
  * Check if current user is client (buyer)
  */
 export function isClient(): boolean {
-  return hasRole([UserRole.CLIENT, UserRole.ADMIN]);
+  return hasRole([UserRole.BUYER, UserRole.ADMIN]);
 }

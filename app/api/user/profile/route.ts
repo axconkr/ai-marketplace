@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { verifyToken } from '@/lib/auth'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/lib/prisma'
+import { requireAuth } from '@/lib/auth'
 
 // GET /api/user/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const decoded = verifyToken(token)
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    const userPayload = await requireAuth(request)
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: userPayload.userId },
       select: {
         id: true,
         email: true,
@@ -40,6 +29,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(user)
   } catch (error) {
+    if (error instanceof Error && (error as any).code === 'MISSING_TOKEN' || (error as any).code === 'INVALID_TOKEN' || (error as any).code === 'INVALID_PAYLOAD') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     console.error('Get profile error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
@@ -51,16 +43,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/user/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '')
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const decoded = verifyToken(token)
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
+    const userPayload = await requireAuth(request)
 
     const body = await request.json()
     const { name, phone, kakao_id, avatar } = body
@@ -75,7 +58,7 @@ export async function PUT(request: NextRequest) {
 
     // Update user profile
     const user = await prisma.user.update({
-      where: { id: decoded.userId },
+      where: { id: userPayload.userId },
       data: {
         ...(name && { name }),
         ...(phone && { phone }),
@@ -100,6 +83,9 @@ export async function PUT(request: NextRequest) {
       user,
     })
   } catch (error) {
+    if (error instanceof Error && (error as any).code === 'MISSING_TOKEN' || (error as any).code === 'INVALID_TOKEN' || (error as any).code === 'INVALID_PAYLOAD') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     console.error('Update profile error:', error)
     return NextResponse.json(
       { error: 'Failed to update profile' },

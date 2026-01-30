@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     if (type === 'orders') {
       const orders = await prisma.order.findMany({
         where: {
-          product: { seller_id: user.id }
+          product: { seller_id: user.userId }
         },
         include: {
           product: true,
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       data = formatOrdersForExport(orders);
     } else if (type === 'products') {
       const products = await prisma.product.findMany({
-        where: { seller_id: user.id },
+        where: { seller_id: user.userId },
         include: {
           orders: {
             where: {
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       );
     } else if (type === 'settlements') {
       const settlements = await prisma.settlement.findMany({
-        where: { seller_id: user.id },
+        where: { seller_id: user.userId },
         orderBy: {
           createdAt: 'desc'
         }

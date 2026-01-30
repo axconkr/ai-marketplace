@@ -79,7 +79,7 @@ export function isAdmin(role: UserRole): boolean {
  * @returns True if role is service provider
  */
 export function isServiceProvider(role: UserRole): boolean {
-  return role === UserRole.SERVICE_PROVIDER;
+  return role === UserRole.SELLER;
 }
 
 /**
@@ -88,7 +88,7 @@ export function isServiceProvider(role: UserRole): boolean {
  * @returns True if role is client
  */
 export function isClient(role: UserRole): boolean {
-  return role === UserRole.CLIENT;
+  return role === UserRole.BUYER;
 }
 
 /**

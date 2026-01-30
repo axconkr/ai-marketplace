@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { successResponse, handleError } from '@/lib/api/response';
 import { prisma } from '@/lib/prisma';
 
@@ -15,7 +16,7 @@ import { prisma } from '@/lib/prisma';
 export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user (admin only)
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
 
     // 2. Fetch statistics
     const [

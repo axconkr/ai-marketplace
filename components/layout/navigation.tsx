@@ -139,7 +139,7 @@ export function Navigation({ className }: NavigationProps) {
 
     if (role === UserRole.ADMIN) {
       setSidebarItems(adminItems);
-    } else if (role === UserRole.SERVICE_PROVIDER) {
+    } else if (role === UserRole.SELLER) {
       setSidebarItems(sellerItems);
     } else {
       setSidebarItems(buyerItems);

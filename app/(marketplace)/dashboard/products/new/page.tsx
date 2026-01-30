@@ -23,7 +23,7 @@ import { UserRole } from '@/src/lib/auth/types';
 
 export default function DashboardCreateProductPage() {
   // Require service provider or admin role
-  useRequireRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  useRequireRole([UserRole.SELLER, UserRole.ADMIN]);
 
   return (
     <div className="container mx-auto px-4 py-8">

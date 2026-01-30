@@ -5,6 +5,7 @@
 
 import { NextRequest } from 'next/server';
 import { requireRole, isAdmin } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import {
   handleError,
   successResponse,
@@ -32,7 +33,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     const { id } = ProductIdSchema.parse(params);
 
     // Require admin role
-    const user = await requireRole(request, ['admin']);
+    const user = await requireRole(request, [UserRole.ADMIN]);
 
     // Get existing product
     const existingProduct = await getProductById(id, true);

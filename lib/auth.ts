@@ -1,21 +1,17 @@
-/**
- * Authentication & Authorization Utilities
- * JWT-based authentication for AI Marketplace API routes
- */
-
 import { NextRequest } from 'next/server';
-import { JwtPayload, jwtVerify, SignJWT } from 'jose';
+import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { UserRole } from '@/src/lib/auth/types';
 import bcrypt from 'bcryptjs';
 
 /**
  * JWT Payload Interface
  */
-export interface AuthTokenPayload extends JwtPayload {
+export interface AuthTokenPayload extends JWTPayload {
   userId: string;
   email: string;
   role: UserRole;
   name?: string;
+  id?: string; // Alias for userId for backwards compatibility
 }
 
 /**
@@ -79,7 +75,7 @@ export async function verifyToken(token: string): Promise<AuthTokenPayload> {
       new TextEncoder().encode(secret)
     );
 
-    return payload as AuthTokenPayload;
+    return payload as unknown as AuthTokenPayload;
   } catch (error) {
     throw new AuthError(
       'Invalid or expired token',
@@ -201,14 +197,14 @@ export async function optionalAuth(
  * Check if user is admin
  */
 export function isAdmin(user: AuthTokenPayload): boolean {
-  return user.role === 'admin';
+  return user.role === UserRole.ADMIN;
 }
 
 /**
  * Check if user is seller (service_provider or seller)
  */
 export function isSeller(user: AuthTokenPayload): boolean {
-  return user.role === 'service_provider' || user.role === 'seller' || user.role === 'admin';
+  return user.role === UserRole.SELLER || user.role === UserRole.ADMIN;
 }
 
 /**
@@ -223,14 +219,14 @@ export function isServiceProvider(user: AuthTokenPayload): boolean {
  * Check if user is client (buyer or user)
  */
 export function isClient(user: AuthTokenPayload): boolean {
-  return user.role === 'client' || user.role === 'user' || user.role === 'admin';
+  return user.role === UserRole.BUYER || user.role === UserRole.ADMIN;
 }
 
 /**
  * Check if user is verifier
  */
 export function isVerifier(user: AuthTokenPayload): boolean {
-  return user.role === 'verifier';
+  return user.role === UserRole.VERIFIER;
 }
 
 /**

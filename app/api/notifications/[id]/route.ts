@@ -17,7 +17,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = user.id;
+    const userId = user.userId;
 
     await deleteNotification(params.id, userId);
 

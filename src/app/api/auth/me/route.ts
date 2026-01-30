@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
+import { getCurrentUser } from '@/src/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {

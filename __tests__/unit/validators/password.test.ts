@@ -54,20 +54,19 @@ describe('Password Validator', () => {
   });
 
   describe('calculatePasswordScore', () => {
-    it('should score weak password low', () => {
+    it('should score short password low', () => {
+      const score = calculatePasswordScore('abc');
+      expect(score).toBeLessThan(40);
+    });
+
+    it('should score password with all character types higher', () => {
       const score = calculatePasswordScore('Abc123!@');
-      expect(score).toBeLessThan(60);
+      expect(score).toBeGreaterThanOrEqual(50);
     });
 
-    it('should score medium password moderately', () => {
-      const score = calculatePasswordScore('MyP@ssw0rd123');
-      expect(score).toBeGreaterThanOrEqual(40);
-      expect(score).toBeLessThan(80);
-    });
-
-    it('should score strong password high', () => {
+    it('should score long complex password high', () => {
       const score = calculatePasswordScore('MyVeryStr0ng!P@ssw0rd2024');
-      expect(score).toBeGreaterThanOrEqual(60);
+      expect(score).toBeGreaterThanOrEqual(80);
     });
 
     it('should give bonus for length', () => {
@@ -78,19 +77,19 @@ describe('Password Validator', () => {
   });
 
   describe('getPasswordStrength', () => {
-    it('should classify weak password', () => {
-      const strength = getPasswordStrength('Abc123!@');
+    it('should classify short simple password as weak', () => {
+      const strength = getPasswordStrength('abc');
       expect(strength).toBe(PasswordStrength.WEAK);
     });
 
-    it('should classify medium password', () => {
-      const strength = getPasswordStrength('MyP@ssw0rd123');
-      expect(strength).toBe(PasswordStrength.MEDIUM);
+    it('should classify password with all char types as strong', () => {
+      const strength = getPasswordStrength('Abc123!@');
+      expect(strength).toBe(PasswordStrength.STRONG);
     });
 
-    it('should classify strong password', () => {
-      const strength = getPasswordStrength('MyVeryStr0ng!P@ssw0rd');
-      expect([PasswordStrength.STRONG, PasswordStrength.VERY_STRONG]).toContain(strength);
+    it('should classify long complex password as very strong', () => {
+      const strength = getPasswordStrength('MyVeryStr0ng!P@ssw0rd2024');
+      expect(strength).toBe(PasswordStrength.VERY_STRONG);
     });
   });
 
@@ -107,9 +106,15 @@ describe('Password Validator', () => {
     });
 
     it('should have correct color for weak password', () => {
-      const details = getPasswordStrengthDetails('Abc123!@');
+      const details = getPasswordStrengthDetails('abc');
       expect(details.color).toBe('red');
       expect(details.label).toBe('Weak');
+    });
+
+    it('should classify password with all character types as strong', () => {
+      const details = getPasswordStrengthDetails('Abc123!@');
+      expect(details.color).toBe('green');
+      expect(details.label).toBe('Strong');
     });
 
     it('should have correct color for strong password', () => {

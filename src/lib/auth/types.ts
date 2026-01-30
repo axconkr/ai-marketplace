@@ -11,9 +11,9 @@ import { z } from 'zod';
 
 export enum UserRole {
   ADMIN = 'admin',
-  SERVICE_PROVIDER = 'service_provider',
-  CLIENT = 'client',
-  USER = 'user',
+  SELLER = 'seller',
+  BUYER = 'buyer',
+  VERIFIER = 'verifier',
 }
 
 export enum Permission {
@@ -57,7 +57,7 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     Permission.PROCESS_PAYMENT,
     Permission.VIEW_PAYMENT,
   ],
-  [UserRole.SERVICE_PROVIDER]: [
+  [UserRole.SELLER]: [
     Permission.CREATE_SERVICE,
     Permission.EDIT_SERVICE,
     Permission.DELETE_SERVICE,
@@ -66,13 +66,13 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
     Permission.VIEW_ORDER,
     Permission.VIEW_PAYMENT,
   ],
-  [UserRole.CLIENT]: [
+  [UserRole.BUYER]: [
     Permission.VIEW_SERVICE,
     Permission.CREATE_ORDER,
     Permission.VIEW_ORDER,
     Permission.VIEW_PAYMENT,
   ],
-  [UserRole.USER]: [Permission.VIEW_SERVICE],
+  [UserRole.VERIFIER]: [Permission.VIEW_SERVICE],
 };
 
 // ============================================================================
@@ -80,6 +80,8 @@ export const rolePermissions: Record<UserRole, Permission[]> = {
 // ============================================================================
 
 export interface User {
+  phone?: string | null;
+  kakao_id?: string | null;
   id: string;
   email: string;
   name: string | null;

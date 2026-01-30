@@ -3,12 +3,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth';
+import { optionalAuth } from '@/src/lib/auth';
 import { StripeSubscriptionService } from '@/src/lib/subscriptions';
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await verifyAuth(req);
+    const user = await optionalAuth(req);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

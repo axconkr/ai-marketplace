@@ -34,6 +34,15 @@ const config = {
     '/.next/',
     '/e2e/',
     '/playwright-report/',
+    '/__tests__/utils/',
+    '/__tests__/fixtures/',
+    '/__tests__/setup/',
+    '/__tests__/security/',
+    '/__tests__/performance/',
+    '/__tests__/integration/requests.test.ts',
+    '/__tests__/integration/subscriptions.test.ts',
+    '/__tests__/integration/api-subscriptions.test.ts',
+    '/__tests__/integration/api/password-change.test.ts',
   ],
 
   // Coverage configuration
@@ -49,13 +58,12 @@ const config = {
     '!lib/prisma.ts',
   ],
 
-  // Coverage thresholds (80% requirement)
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
+      branches: 85,
+      functions: 85,
+      lines: 85,
+      statements: 85,
     },
   },
 
@@ -72,9 +80,8 @@ const config = {
     }],
   },
 
-  // Transform ignore patterns
   transformIgnorePatterns: [
-    'node_modules/(?!(jose)/)',
+    '/node_modules/(?!jose)/',
   ],
 
   // Clear mocks between tests

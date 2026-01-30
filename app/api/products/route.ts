@@ -6,6 +6,7 @@
 
 import { NextRequest } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import {
   handleError,
   createdResponse,
@@ -32,7 +33,7 @@ import { createProduct, searchProducts } from '@/lib/services/product';
 export async function POST(request: NextRequest) {
   try {
     // Require seller, service_provider or admin role
-    const user = await requireRole(request, ['seller', 'service_provider', 'admin']);
+    const user = await requireRole(request, [UserRole.SELLER, UserRole.ADMIN]);
 
     // Parse and validate request body
     const data = await parseBody<ProductCreateInput>(request, ProductCreateSchema);

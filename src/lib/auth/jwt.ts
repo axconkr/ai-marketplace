@@ -17,12 +17,12 @@ export function mapDatabaseRoleToUserRole(dbRole: string): UserRole {
     case 'admin':
       return UserRole.ADMIN;
     case 'seller':
-      return UserRole.SERVICE_PROVIDER;
+      return UserRole.SELLER;
     case 'verifier':
       return UserRole.ADMIN; // Verifiers have admin-level access
     case 'user':
     default:
-      return UserRole.CLIENT;
+      return UserRole.BUYER;
   }
 }
 

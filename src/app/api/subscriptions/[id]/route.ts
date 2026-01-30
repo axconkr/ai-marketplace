@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAuth } from '@/lib/auth';
+import { optionalAuth } from '@/src/lib/auth';
 import {
   SubscriptionService,
   StripeSubscriptionService,
@@ -22,7 +22,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await verifyAuth(req);
+    const user = await optionalAuth(req);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -63,7 +63,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await verifyAuth(req);
+    const user = await optionalAuth(req);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -133,7 +133,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await verifyAuth(req);
+    const user = await optionalAuth(req);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },

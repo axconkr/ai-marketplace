@@ -56,7 +56,7 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function AnalyticsPage() {
   // Require service provider or admin role
-  useRequireRole([UserRole.SERVICE_PROVIDER, UserRole.ADMIN]);
+  useRequireRole([UserRole.SELLER, UserRole.ADMIN]);
 
   const [period, setPeriod] = useState<Period>('30d');
 
