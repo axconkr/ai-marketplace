@@ -221,44 +221,72 @@ export class TossPaymentsProvider implements IPaymentProvider {
     }
   }
 
-  /**
-   * Handle TossPayments webhook
-   */
-  async handleWebhook(request: Request): Promise<WebhookEvent> {
-    try {
-      const body = await request.json();
+   /**
+    * Handle TossPayments webhook
+    */
+   async handleWebhook(request: Request): Promise<WebhookEvent> {
+     try {
+       // Clone request for signature verification (body can only be read once)
+       const clonedRequest = request.clone();
 
-      // Verify webhook (basic verification)
-      if (!body.eventType || !body.data) {
-        throw new WebhookError('Invalid webhook payload');
-      }
+       const isValid = await this.verifyWebhookSignature(clonedRequest);
+       if (!isValid) {
+         throw new WebhookError('Invalid webhook signature');
+       }
 
-      return this.processWebhookEvent(body);
-    } catch (error) {
-      console.error('TossPayments webhook error:', error);
-      if (error instanceof WebhookError) {
-        throw error;
-      }
-      throw new WebhookError(
-        'Failed to process webhook',
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-    }
-  }
+       const body = await request.json();
 
-  /**
-   * Verify TossPayments webhook signature
-   */
-  async verifyWebhookSignature(request: Request): Promise<boolean> {
-    try {
-      // TossPayments webhook verification
-      // Basic verification - check for required fields
-      const body = await request.json();
-      return !!(body.eventType && body.data);
-    } catch {
-      return false;
-    }
-  }
+       // Verify webhook payload structure
+       if (!body.eventType || !body.data) {
+         throw new WebhookError('Invalid webhook payload');
+       }
+
+       return this.processWebhookEvent(body);
+     } catch (error) {
+       console.error('TossPayments webhook error:', error);
+       if (error instanceof WebhookError) {
+         throw error;
+       }
+       throw new WebhookError(
+         'Failed to process webhook',
+         error instanceof Error ? error.message : 'Unknown error'
+       );
+     }
+   }
+
+   /**
+    * Verify TossPayments webhook signature
+    */
+   async verifyWebhookSignature(request: Request): Promise<boolean> {
+     try {
+       const signature = request.headers.get('Toss-Signature');
+       if (!signature) return false;
+
+       const webhookSecret = process.env.TOSS_WEBHOOK_SECRET;
+       if (!webhookSecret) {
+         console.error('TOSS_WEBHOOK_SECRET not configured');
+         return false;
+       }
+
+       const body = await request.text();
+       const encoder = new TextEncoder();
+       const key = await crypto.subtle.importKey(
+         'raw',
+         encoder.encode(webhookSecret),
+         { name: 'HMAC', hash: 'SHA-256' },
+         false,
+         ['sign']
+       );
+
+       const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(body));
+       const computedSignature = Buffer.from(signatureBytes).toString('base64');
+
+       return computedSignature === signature;
+     } catch (error) {
+       console.error('Webhook signature verification failed:', error);
+       return false;
+     }
+   }
 
   // ============================================================================
   // HELPER METHODS
