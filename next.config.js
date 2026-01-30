@@ -1,4 +1,8 @@
 /** @type {import('next').NextConfig} */
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 const nextConfig = {
   // Enable strict mode for better error handling
   reactStrictMode: true,
@@ -63,14 +67,18 @@ const nextConfig = {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-        ],
-      },
-    ];
-  },
+           {
+             key: 'Referrer-Policy',
+             value: 'origin-when-cross-origin',
+           },
+           {
+             key: 'Content-Security-Policy',
+             value: "default-src 'self'; script-src 'self' https://js.stripe.com https://js.tosspayments.com https://*.sentry.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://api.tosspayments.com https://*.sentry.io https://*.ingest.sentry.io; frame-src https://js.stripe.com https://hooks.stripe.com https://tosspayments.com;",
+           },
+         ],
+       },
+     ];
+   },
 
   // Experimental features
   experimental: {
@@ -81,4 +89,4 @@ const nextConfig = {
   turbopack: {},
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);
