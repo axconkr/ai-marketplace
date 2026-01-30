@@ -161,9 +161,7 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      // Verify token
       const payload = await verifyToken(token);
-      console.log(`[Middleware] Token verified for path: ${pathname}, user: ${payload.userId}, role: ${payload.role}`);
 
       // Check role-based access
       if (

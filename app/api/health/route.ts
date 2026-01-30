@@ -1,82 +1,61 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-/**
- * Health Check Endpoint
- * Used by CI/CD pipeline for post-deployment verification
- *
- * GET /api/health
- * Returns: 200 OK with system status
- */
-export async function GET(request: NextRequest) {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  timestamp: string;
+  version: string;
+  environment: string;
+  uptime: number;
+  services: {
+    database: 'up' | 'down';
+    api: 'up' | 'down';
+  };
+  latency?: {
+    database: number;
+  };
+}
+
+const startTime = Date.now();
+
+export async function GET() {
+  const health: HealthStatus = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    version: process.env.npm_package_version || '1.0.0',
+    environment: process.env.NODE_ENV || 'unknown',
+    uptime: Math.floor((Date.now() - startTime) / 1000),
+    services: {
+      database: 'down',
+      api: 'up',
+    },
+  };
+
   try {
-    // Basic health check
-    const health = {
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'unknown',
-      uptime: process.uptime(),
+    const dbStart = Date.now();
+    await prisma.$queryRaw`SELECT 1`;
+    const dbLatency = Date.now() - dbStart;
+
+    health.services.database = 'up';
+    health.latency = { database: dbLatency };
+
+    if (dbLatency > 1000) {
+      health.status = 'degraded';
     }
-
-    // Optional: Add database connection check
-    // const dbHealthy = await checkDatabaseConnection()
-
-    // Optional: Add external service checks
-    // const servicesHealthy = await checkExternalServices()
-
-    return NextResponse.json(health, { status: 200 })
-  } catch (error) {
-    console.error('Health check failed:', error)
-
-    return NextResponse.json(
-      {
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 503 }
-    )
+  } catch {
+    health.services.database = 'down';
+    health.status = 'unhealthy';
   }
-}
 
-/**
- * Example: Database connection check
- * Uncomment and implement when Prisma is setup
- */
-/*
-async function checkDatabaseConnection(): Promise<boolean> {
-  try {
-    const { PrismaClient } = await import('@prisma/client')
-    const prisma = new PrismaClient()
-    await prisma.$queryRaw`SELECT 1`
-    await prisma.$disconnect()
-    return true
-  } catch (error) {
-    console.error('Database check failed:', error)
-    return false
-  }
-}
-*/
+  const httpStatus = health.status === 'unhealthy' ? 503 : 200;
 
-/**
- * Example: External services health check
- */
-/*
-async function checkExternalServices(): Promise<boolean> {
-  try {
-    // Check Supabase
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    if (supabaseUrl) {
-      const response = await fetch(`${supabaseUrl}/rest/v1/`, {
-        method: 'HEAD',
-      })
-      if (!response.ok) return false
-    }
-
-    // Add more service checks as needed
-    return true
-  } catch (error) {
-    console.error('External services check failed:', error)
-    return false
-  }
+  return NextResponse.json(health, {
+    status: httpStatus,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+    },
+  });
 }
-*/

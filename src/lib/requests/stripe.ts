@@ -1,17 +1,19 @@
-/**
- * Stripe integration for escrow payments
- */
-
 import Stripe from 'stripe';
 import { EscrowService } from './service';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined');
-}
+let stripeInstance: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not defined');
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripeInstance;
+}
 
 export interface CreateEscrowPaymentParams {
   escrowId: string;
@@ -30,7 +32,7 @@ export async function createEscrowPaymentIntent(
   const { escrowId, amount, buyerEmail, requestTitle, metadata } = params;
 
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
+    const paymentIntent = await getStripe().paymentIntents.create({
       amount: amount, // Amount in smallest currency unit (e.g., cents for USD, won for KRW)
       currency: 'krw',
       automatic_payment_methods: {
@@ -65,7 +67,7 @@ export async function createEscrowPaymentIntent(
  */
 export async function captureEscrowPayment(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.capture(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.capture(paymentIntentId);
     return paymentIntent;
   } catch (error) {
     console.error('Stripe payment capture error:', error);
@@ -78,7 +80,7 @@ export async function captureEscrowPayment(paymentIntentId: string) {
  */
 export async function cancelEscrowPayment(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.cancel(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.cancel(paymentIntentId);
     return paymentIntent;
   } catch (error) {
     console.error('Stripe payment cancel error:', error);
@@ -91,7 +93,7 @@ export async function cancelEscrowPayment(paymentIntentId: string) {
  */
 export async function getPaymentIntentStatus(paymentIntentId: string) {
   try {
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const paymentIntent = await getStripe().paymentIntents.retrieve(paymentIntentId);
     return {
       id: paymentIntent.id,
       status: paymentIntent.status,
@@ -105,4 +107,4 @@ export async function getPaymentIntentStatus(paymentIntentId: string) {
   }
 }
 
-export { stripe };
+export { getStripe };

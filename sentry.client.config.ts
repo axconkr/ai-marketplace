@@ -1,0 +1,47 @@
+// This file configures the initialization of Sentry on the client.
+// The config you add here will be used whenever a user loads a page in their browser.
+// https://docs.sentry.io/platforms/javascript/guides/nextjs/
+
+import * as Sentry from "@sentry/nextjs";
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+
+  // Adjust this value in production, or use tracesSampler for greater control
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+
+  // Setting this option to true will print useful information to the console while you're setting up Sentry.
+  debug: false,
+
+  // Replay configuration
+  replaysOnErrorSampleRate: 1.0,
+  replaysSessionSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 0,
+
+  // Additional integrations
+  integrations: [
+    Sentry.replayIntegration({
+      maskAllText: true,
+      blockAllMedia: true,
+    }),
+  ],
+
+  // Environment
+  environment: process.env.NODE_ENV || "development",
+
+  // Ignore specific errors
+  ignoreErrors: [
+    // Ignore network errors that are expected
+    "Failed to fetch",
+    "NetworkError",
+    "AbortError",
+    // Ignore browser extension errors
+    /chrome-extension/,
+    /moz-extension/,
+    // Ignore hydration warnings (handled separately)
+    "Hydration failed",
+    "Text content does not match",
+  ],
+
+  // Only send events in production (or when explicitly enabled)
+  enabled: process.env.NODE_ENV === "production" || process.env.SENTRY_ENABLED === "true",
+});

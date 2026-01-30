@@ -50,8 +50,6 @@ export function LogoutButton({
         console.error('Logout API error (non-blocking):', logoutError);
       }
 
-      console.log('Logout - All auth data cleared'); // 디버깅용
-
       // Trigger custom event for header update (same tab)
       window.dispatchEvent(new Event('authStateChanged'));
       // Also trigger storage event for other tabs

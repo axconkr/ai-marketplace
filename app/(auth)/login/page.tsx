@@ -59,7 +59,6 @@ export default function LoginPage() {
       }
       if (data.user) {
         localStorage.setItem('userInfo', JSON.stringify(data.user));
-        console.log('Login - User info saved:', data.user); // 디버깅용
       }
 
       // Trigger custom event for header update (same tab)

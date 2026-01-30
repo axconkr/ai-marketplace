@@ -1,7 +1,3 @@
-/**
- * Stripe integration for subscriptions
- */
-
 import Stripe from 'stripe';
 import { SubscriptionService, PlanService } from './service';
 import {
@@ -11,13 +7,19 @@ import {
   type CreateSubscriptionInput,
 } from './types';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not defined');
-}
+let stripeInstance: Stripe | null = null;
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16',
-});
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not defined');
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2023-10-16',
+    });
+  }
+  return stripeInstance;
+}
 
 export class StripeSubscriptionService {
   /**
@@ -40,7 +42,7 @@ export class StripeSubscriptionService {
     const customer = await this.getOrCreateCustomer(userId, userEmail);
 
     // Create checkout session
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       customer: customer.id,
       payment_method_types: ['card'],
       line_items: [
@@ -82,7 +84,7 @@ export class StripeSubscriptionService {
       throw new Error('No active subscription found');
     }
 
-    const session = await stripe.billingPortal.sessions.create({
+    const session = await getStripe().billingPortal.sessions.create({
       customer: subscription.stripeCustomerId,
       return_url: returnUrl || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/subscription`,
     });
@@ -107,7 +109,7 @@ export class StripeSubscriptionService {
     }
 
     // Get Stripe subscription
-    const stripeSubscription = await stripe.subscriptions.retrieve(
+    const stripeSubscription = await getStripe().subscriptions.retrieve(
       dbSubscription.stripeSubscriptionId
     );
 
@@ -118,7 +120,7 @@ export class StripeSubscriptionService {
     }
 
     // Update subscription
-    const updatedSubscription = await stripe.subscriptions.update(
+    const updatedSubscription = await getStripe().subscriptions.update(
       dbSubscription.stripeSubscriptionId,
       {
         items: [
@@ -159,7 +161,7 @@ export class StripeSubscriptionService {
 
     if (immediately) {
       // Cancel immediately
-      const canceledSubscription = await stripe.subscriptions.cancel(
+      const canceledSubscription = await getStripe().subscriptions.cancel(
         dbSubscription.stripeSubscriptionId
       );
 
@@ -168,7 +170,7 @@ export class StripeSubscriptionService {
       return canceledSubscription;
     } else {
       // Cancel at period end
-      const updatedSubscription = await stripe.subscriptions.update(
+      const updatedSubscription = await getStripe().subscriptions.update(
         dbSubscription.stripeSubscriptionId,
         {
           cancel_at_period_end: true,
@@ -190,7 +192,7 @@ export class StripeSubscriptionService {
       throw new Error('Subscription not found');
     }
 
-    const updatedSubscription = await stripe.subscriptions.update(
+    const updatedSubscription = await getStripe().subscriptions.update(
       dbSubscription.stripeSubscriptionId,
       {
         cancel_at_period_end: false,
@@ -214,11 +216,11 @@ export class StripeSubscriptionService {
     });
 
     if (user?.stripeCustomerId) {
-      return stripe.customers.retrieve(user.stripeCustomerId) as Promise<Stripe.Customer>;
+      return getStripe().customers.retrieve(user.stripeCustomerId) as Promise<Stripe.Customer>;
     }
 
     // Create new customer
-    const customer = await stripe.customers.create({
+    const customer = await getStripe().customers.create({
       email,
       metadata: { userId },
     });
@@ -316,7 +318,7 @@ export class StripeSubscriptionService {
     if (!invoice.subscription) return;
 
     // Payment succeeded, subscription is active
-    const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+    const subscription = await getStripe().subscriptions.retrieve(invoice.subscription as string);
 
     await SubscriptionService.updateSubscriptionByStripeId(subscription.id, {
       status: SubscriptionStatus.ACTIVE,
@@ -331,7 +333,7 @@ export class StripeSubscriptionService {
   private static async handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     if (!invoice.subscription) return;
 
-    const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
+    const subscription = await getStripe().subscriptions.retrieve(invoice.subscription as string);
 
     await SubscriptionService.updateSubscriptionByStripeId(subscription.id, {
       status: SubscriptionStatus.PAST_DUE,
@@ -372,7 +374,7 @@ export class StripeSubscriptionService {
    * Sync subscription status from Stripe
    */
   static async syncSubscriptionStatus(stripeSubscriptionId: string) {
-    const subscription = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+    const subscription = await getStripe().subscriptions.retrieve(stripeSubscriptionId);
     const status = this.mapStripeStatus(subscription.status);
 
     await SubscriptionService.updateSubscriptionByStripeId(stripeSubscriptionId, {
@@ -386,4 +388,4 @@ export class StripeSubscriptionService {
   }
 }
 
-export { stripe };
+export { getStripe };

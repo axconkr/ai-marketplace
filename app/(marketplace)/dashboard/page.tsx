@@ -58,18 +58,13 @@ export default function Dashboard() {
     const checkUserRole = async () => {
       try {
         const role = getUserRoleFromToken();
-        console.log('🔍 Dashboard - Detected role from token:', role);
         if (!role) return;
 
-        // Map UserRole enum to component state
         if (role === UserRole.ADMIN) {
-          console.log('✅ Setting userRole to: admin');
           setUserRole('admin');
         } else if (role === UserRole.SELLER) {
-          console.log('✅ Setting userRole to: service_provider');
           setUserRole('service_provider');
         } else {
-          console.log('✅ Setting userRole to: client');
           setUserRole('client');
         }
       } catch (error) {

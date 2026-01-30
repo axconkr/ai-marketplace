@@ -147,7 +147,7 @@ export function OrderTable({
                 const selectedOrdersList = orders.filter((order) =>
                   selectedOrders.has(order.id)
                 );
-                console.log('Export orders:', selectedOrdersList);
+                // TODO: Implement actual export functionality
               }}
             >
               <Download className="mr-2 h-4 w-4" />
