@@ -5,33 +5,11 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["icn1"],
-  "env": {
-    "DATABASE_URL": "@database-url",
-    "JWT_SECRET": "@jwt-secret",
-    "JWT_REFRESH_SECRET": "@jwt-refresh-secret",
-    "STRIPE_SECRET_KEY": "@stripe-secret-key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe-webhook-secret",
-    "TOSS_SECRET_KEY": "@toss-secret-key",
-    "SUPABASE_URL": "@supabase-url",
-    "SUPABASE_ANON_KEY": "@supabase-anon-key",
-    "SENDGRID_API_KEY": "@sendgrid-api-key"
-  },
-  "build": {
-    "env": {
-      "DATABASE_URL": "@database-url"
-    }
-  },
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/monthly-settlement",
-      "schedule": "0 0 1 * *"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
@@ -39,10 +17,6 @@
         {
           "key": "Access-Control-Allow-Credentials",
           "value": "true"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "https://aimarketplace.com"
         },
         {
           "key": "Access-Control-Allow-Methods",
