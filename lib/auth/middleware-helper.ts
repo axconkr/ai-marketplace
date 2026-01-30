@@ -8,34 +8,34 @@ import { useRouter } from 'next/navigation';
 import { UserRole } from '@/src/lib/auth/types';
 
 /**
- * Get user role from JWT token
+ * Get user role from stored user info
  */
 export function getUserRoleFromToken(): UserRole | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return null;
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) return null;
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.role as UserRole;
+    const user = JSON.parse(userInfo);
+    return user.role as UserRole;
   } catch {
     return null;
   }
 }
 
 /**
- * Get user ID from JWT token
+ * Get user ID from stored user info
  */
 export function getUserIdFromToken(): string | null {
   if (typeof window === 'undefined') return null;
 
   try {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return null;
+    const userInfo = localStorage.getItem('userInfo');
+    if (!userInfo) return null;
 
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.userId;
+    const user = JSON.parse(userInfo);
+    return user.id;
   } catch {
     return null;
   }
@@ -66,10 +66,10 @@ export function useRequireRole(
   const router = useRouter();
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const userInfo = localStorage.getItem('userInfo');
 
     // Check authentication
-    if (!token) {
+    if (!userInfo) {
       router.push(`${redirectUrl}?redirect=${window.location.pathname}`);
       return;
     }
