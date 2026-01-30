@@ -1,10 +1,11 @@
 /**
  * Rate Limiting Utility
- * Simple in-memory rate limiter for API endpoints
+ * Redis-based rate limiter with in-memory fallback
  */
 
 import { NextRequest } from 'next/server';
 import { LRUCache } from 'lru-cache';
+import { redis } from './redis';
 
 /**
  * Rate limit options
@@ -24,7 +25,7 @@ export interface RateLimitResult {
 }
 
 /**
- * Create a rate limiter
+ * Create a rate limiter using Redis or in-memory fallback
  * @param options - Rate limit configuration
  * @returns Rate limiter instance
  */
@@ -34,79 +35,93 @@ export function rateLimit(options: RateLimitOptions) {
     ttl: options.interval,
   });
 
+  const getIdentifier = (request: NextRequest, token?: string): string => {
+    return (
+      token ||
+      request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      request.headers.get('x-real-ip') ||
+      'unknown'
+    );
+  };
+
   return {
-    /**
-     * Check if request is within rate limit
-     * @param request - NextRequest object
-     * @param limit - Maximum number of requests allowed
-     * @param token - Optional custom token (defaults to IP address)
-     * @throws Error if rate limit exceeded
-     */
     async check(
       request: NextRequest,
       limit: number,
       token?: string
     ): Promise<RateLimitResult> {
-      // Get token (use custom token or IP address)
-      const identifier =
-        token ||
-        request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
-
-      // Get current timestamps for this token
-      const tokenCount = tokenCache.get(identifier) || [];
+      const identifier = getIdentifier(request, token);
       const now = Date.now();
       const windowStart = now - options.interval;
+      const redisKey = `rate-limit:${identifier}`;
 
-      // Filter out old timestamps outside the window
+      if (redis) {
+        try {
+          const stored = await redis.get(redisKey);
+          const timestamps: number[] = stored ? JSON.parse(stored) : [];
+          const validTokens = timestamps.filter((ts) => ts > windowStart);
+
+          if (validTokens.length >= limit) {
+            const oldestToken = Math.min(...validTokens);
+            const resetTime = oldestToken + options.interval;
+            throw new Error('Rate limit exceeded');
+          }
+
+          validTokens.push(now);
+          await redis.setex(
+            redisKey,
+            Math.ceil(options.interval / 1000),
+            JSON.stringify(validTokens)
+          );
+
+          const oldestToken = Math.min(...validTokens);
+          const resetTime = oldestToken + options.interval;
+
+          return {
+            limit,
+            remaining: limit - validTokens.length,
+            reset: Math.ceil(resetTime / 1000),
+          };
+        } catch (error) {
+          if (error instanceof Error && error.message === 'Rate limit exceeded') {
+            throw error;
+          }
+          console.error('Redis rate limit error, falling back to in-memory:', error);
+        }
+      }
+
+      const tokenCount = tokenCache.get(identifier) || [];
       const validTokens = tokenCount.filter((timestamp) => timestamp > windowStart);
 
-      // Check if limit exceeded
       if (validTokens.length >= limit) {
         const oldestToken = Math.min(...validTokens);
         const resetTime = oldestToken + options.interval;
-
         throw new Error('Rate limit exceeded');
       }
 
-      // Add current request timestamp
       validTokens.push(now);
       tokenCache.set(identifier, validTokens);
 
-      // Calculate reset time
       const oldestToken = Math.min(...validTokens);
       const resetTime = oldestToken + options.interval;
 
       return {
         limit,
         remaining: limit - validTokens.length,
-        reset: Math.ceil(resetTime / 1000), // Convert to seconds
+        reset: Math.ceil(resetTime / 1000),
       };
     },
 
-    /**
-     * Get current rate limit status without incrementing
-     * @param request - NextRequest object
-     * @param limit - Maximum number of requests allowed
-     * @param token - Optional custom token
-     * @returns Rate limit status
-     */
     getStatus(
       request: NextRequest,
       limit: number,
       token?: string
     ): RateLimitResult {
-      const identifier =
-        token ||
-        request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
-
-      const tokenCount = tokenCache.get(identifier) || [];
+      const identifier = getIdentifier(request, token);
       const now = Date.now();
       const windowStart = now - options.interval;
 
+      const tokenCount = tokenCache.get(identifier) || [];
       const validTokens = tokenCount.filter((timestamp) => timestamp > windowStart);
 
       const oldestToken = validTokens.length > 0 ? Math.min(...validTokens) : now;
@@ -119,17 +134,15 @@ export function rateLimit(options: RateLimitOptions) {
       };
     },
 
-    /**
-     * Reset rate limit for a specific token
-     * @param token - Token to reset
-     */
     reset(token: string): void {
       tokenCache.delete(token);
+      if (redis) {
+        redis.del(`rate-limit:${token}`).catch((error) => {
+          console.error('Redis reset error:', error);
+        });
+      }
     },
 
-    /**
-     * Clear all rate limit data
-     */
     clear(): void {
       tokenCache.clear();
     },
