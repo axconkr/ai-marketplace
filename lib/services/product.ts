@@ -6,6 +6,7 @@
 import { prisma } from '../prisma';
 import { Prisma } from '@prisma/client';
 import type { ProductCreateInput, ProductUpdateInput, ProductSearchParams } from '../validations/product';
+import { ProductStatus } from '../validations/product';
 import { advancedProductSearch } from './product-search';
 
 // ============================================================================
@@ -20,7 +21,7 @@ export async function createProduct(sellerId: string, data: ProductCreateInput) 
     data: {
       ...data,
       seller_id: sellerId,
-      status: 'draft' as ProductStatus,
+      status: ProductStatus.draft,
     },
     include: {
       seller: {
@@ -50,20 +51,11 @@ export async function getProductById(productId: string, includeInactive: boolean
       },
       reviews: {
         take: 10,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          buyer: {
-            select: {
-              id: true,
-              name: true,
-              avatar: true,
-            },
-          },
-        },
+        orderBy: { created_at: 'desc' },
       },
       verifications: {
         where: {
-          status: 'approved',
+          status: 'APPROVED',
         },
         orderBy: {
           level: 'desc',
@@ -114,7 +106,7 @@ export async function deleteProduct(productId: string) {
   return await prisma.product.update({
     where: { id: productId },
     data: {
-      status: 'suspended' as ProductStatus,
+      status: ProductStatus.suspended,
       updatedAt: new Date(), // Product uses updatedAt (camelCase)
     },
   });
@@ -137,7 +129,7 @@ export async function getSellerProducts(sellerId: string, includeInactive: boole
   };
 
   if (!includeInactive) {
-    where.status = 'ACTIVE' as ProductStatus;
+    where.status = ProductStatus.active;
   }
 
   return await prisma.product.findMany({
@@ -185,7 +177,7 @@ export async function publishProduct(productId: string) {
   return await prisma.product.update({
     where: { id: productId },
     data: {
-      status: 'pending' as ProductStatus,
+      status: ProductStatus.pending,
       updatedAt: new Date(), // Product uses updatedAt (camelCase)
     },
     include: {
@@ -220,7 +212,7 @@ export async function approveProduct(productId: string) {
   return await prisma.product.update({
     where: { id: productId },
     data: {
-      status: 'ACTIVE' as ProductStatus,
+      status: ProductStatus.active,
       updatedAt: new Date(), // Product uses updatedAt (camelCase)
     },
     include: {
@@ -242,7 +234,7 @@ export async function rejectProduct(productId: string, reason?: string) {
   return await prisma.product.update({
     where: { id: productId },
     data: {
-      status: 'draft' as ProductStatus,
+      status: ProductStatus.draft,
       updatedAt: new Date(), // Product uses updatedAt (camelCase)
     },
   });
