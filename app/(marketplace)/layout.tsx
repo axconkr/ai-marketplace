@@ -1,113 +1,7 @@
-'use client';
-
 import Link from 'next/link';
-import { Package, Search, User, ShoppingCart, Menu } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Header } from '@/components/layout/header';
 import { QueryProvider } from '@/lib/providers/query-provider';
 import { ToastProvider } from '@/components/ui/toast';
-import { useCart } from '@/contexts/cart-context';
-import { getUserRoleFromToken } from '@/lib/auth/middleware-helper';
-import { UserRole } from '@/src/lib/auth/types';
-import { useEffect, useState } from 'react';
-
-/**
- * Marketplace Layout
- * Shared layout for all marketplace pages
- */
-
-function MarketplaceHeader() {
-  const { count } = useCart();
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-
-  useEffect(() => {
-    setUserRole(getUserRoleFromToken());
-  }, []);
-
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/products" className="flex items-center gap-2">
-          <Package className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl hidden sm:inline-block">
-            AI Marketplace
-          </span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/products"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
-            Products
-          </Link>
-          <Link
-            href="/products?category=n8n"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
-            n8n Workflows
-          </Link>
-          <Link
-            href="/products?category=ai_agent"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
-            AI Agents
-          </Link>
-          <Link
-            href="/dashboard/products"
-            className="text-sm font-medium hover:text-primary transition-colors"
-          >
-            Dashboard
-          </Link>
-        </nav>
-
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/search">
-              <Search className="h-5 w-5" />
-            </Link>
-          </Button>
-
-          <Button variant="ghost" size="icon" asChild className="relative">
-            <Link href="/cart">
-              <ShoppingCart className="h-5 w-5" />
-              {count > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                >
-                  {count}
-                </Badge>
-              )}
-            </Link>
-          </Button>
-
-          <Button variant="ghost" size="icon" asChild className="md:hidden">
-            <button>
-              <Menu className="h-5 w-5" />
-            </button>
-          </Button>
-
-          {/* Show "Sell Product" button only for sellers */}
-          {(userRole === UserRole.SELLER || userRole === UserRole.ADMIN) && (
-            <Button variant="default" asChild className="hidden md:flex">
-              <Link href="/products/new">Sell Product</Link>
-            </Button>
-          )}
-
-          <Button variant="outline" size="icon" asChild>
-            <Link href="/profile">
-              <User className="h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 export default function MarketplaceLayout({
   children,
@@ -119,7 +13,7 @@ export default function MarketplaceLayout({
       <ToastProvider>
         <div className="min-h-screen flex flex-col">
           {/* Navigation Header */}
-          <MarketplaceHeader />
+          <Header />
 
           {/* Main Content */}
           <main className="flex-1">{children}</main>

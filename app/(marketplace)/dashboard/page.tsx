@@ -49,32 +49,47 @@ const periodOptions = [
 export default function Dashboard() {
   const [period, setPeriod] = useState<Period>('30d');
   const [userRole, setUserRole] = useState<'client' | 'service_provider' | 'admin' | null>(null);
+  const [isRoleLoading, setIsRoleLoading] = useState(true);
 
-  // Require authentication (no specific role required - dashboard adapts to role)
   useRequireRole();
 
-  // Determine user role from token or API
   useEffect(() => {
     const checkUserRole = async () => {
       try {
         const role = getUserRoleFromToken();
-        if (!role) return;
-
+        
         if (role === UserRole.ADMIN) {
           setUserRole('admin');
         } else if (role === UserRole.SELLER) {
           setUserRole('service_provider');
+        } else if (role === UserRole.BUYER) {
+          setUserRole('client');
         } else {
           setUserRole('client');
         }
       } catch (error) {
         console.error('Failed to determine user role:', error);
-        setUserRole('client'); // Default to buyer
+        setUserRole('client');
+      } finally {
+        setIsRoleLoading(false);
       }
     };
 
     checkUserRole();
   }, []);
+
+  if (isRoleLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">대시보드 로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Buyer queries
   const { data: buyerOverview } = useQuery({
