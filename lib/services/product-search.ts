@@ -8,6 +8,64 @@ import { prisma } from '../prisma';
 import { Prisma } from '@prisma/client';
 import type { ProductSearchParams } from '../validations/product';
 
+export async function searchProductsFullText(
+  query: string,
+  filters: Partial<ProductSearchParams> = {},
+  limit: number = 20,
+  offset: number = 0
+) {
+  if (!query || query.trim().length === 0) {
+    return { products: [], total: 0 };
+  }
+
+  const searchQuery = query.trim().split(/\s+/).join(' & ');
+  
+  const results = await prisma.$queryRaw<Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    category: string;
+    price: number;
+    currency: string;
+    status: string;
+    verification_level: number;
+    rating_average: number | null;
+    rating_count: number;
+    download_count: number;
+    rank: number;
+  }>>`
+    SELECT 
+      id, name, description, category, price, currency, status,
+      verification_level, rating_average, rating_count, download_count,
+      ts_rank(
+        to_tsvector('simple', coalesce(name, '') || ' ' || coalesce(description, '')),
+        plainto_tsquery('simple', ${query})
+      ) as rank
+    FROM "Product"
+    WHERE 
+      status = 'ACTIVE'
+      AND to_tsvector('simple', coalesce(name, '') || ' ' || coalesce(description, ''))
+        @@ plainto_tsquery('simple', ${query})
+    ORDER BY rank DESC, download_count DESC
+    LIMIT ${limit}
+    OFFSET ${offset}
+  `;
+
+  const countResult = await prisma.$queryRaw<[{ count: bigint }]>`
+    SELECT COUNT(*) as count
+    FROM "Product"
+    WHERE 
+      status = 'ACTIVE'
+      AND to_tsvector('simple', coalesce(name, '') || ' ' || coalesce(description, ''))
+        @@ plainto_tsquery('simple', ${query})
+  `;
+
+  return {
+    products: results,
+    total: Number(countResult[0]?.count || 0),
+  };
+}
+
 // ============================================================================
 // SEARCH QUERY BUILDER
 // ============================================================================
