@@ -74,7 +74,7 @@ const nextConfig = {
            },
            {
              key: 'Content-Security-Policy',
-             value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://js.tosspayments.com https://*.sentry.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://api.tosspayments.com https://*.sentry.io https://*.ingest.sentry.io https://*.supabase.co wss://*.supabase.co; frame-src https://js.stripe.com https://hooks.stripe.com https://tosspayments.com;",
+             value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://js.tosspayments.com https://*.sentry.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://api.stripe.com https://api.tosspayments.com https://*.sentry.io https://*.ingest.sentry.io https://*.supabase.co wss://*.supabase.co; frame-src https://js.stripe.com https://hooks.stripe.com https://tosspayments.com; worker-src 'self' blob:;",
            },
          ],
        },
