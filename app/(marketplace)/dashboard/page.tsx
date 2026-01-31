@@ -78,20 +78,7 @@ export default function Dashboard() {
     checkUserRole();
   }, []);
 
-  if (isRoleLoading) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">대시보드 로딩 중...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Buyer queries
+  // Buyer queries - ALL hooks must be called before any conditional return
   const { data: buyerOverview } = useQuery({
     queryKey: ['buyer-overview', period],
     queryFn: async () => {
@@ -196,7 +183,19 @@ export default function Dashboard() {
     return 'neutral';
   };
 
-  // Render buyer dashboard
+  if (isRoleLoading) {
+    return (
+      <div className="container mx-auto py-8 px-4">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">대시보드 로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (userRole === 'client') {
     return (
       <div className="container mx-auto py-8 px-4">
