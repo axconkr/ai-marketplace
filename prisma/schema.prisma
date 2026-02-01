@@ -15,6 +15,7 @@ model User {
   name                    String?
   avatar                  String?
   role                    String               @default("user")
+  status                  UserStatus           @default(ACTIVE)
   phone                   String?
   kakao_id                String?
   emailVerified           Boolean              @default(false)
@@ -48,10 +49,14 @@ model User {
   buyerRequests           DevelopmentRequest[] @relation("BuyerRequests")
   sellerProposals         Proposal[]           @relation("SellerProposals")
   subscriptions           Subscription[]
+  supportTickets          SupportTicket[]      @relation("TicketReporter")
+  assignedTickets         SupportTicket[]      @relation("TicketAssignee")
+  systemSettingsUpdates   SystemSettings[]     @relation("SettingsUpdater")
 
   @@index([email])
   @@index([oauthProvider, oauthId])
   @@index([role])
+  @@index([status])
   @@index([subscriptionTier])
   @@index([stripeCustomerId])
 }
@@ -103,7 +108,6 @@ model Product {
   @@index([price])
   @@index([download_count])
   @@index([createdAt])
-
   // Composite indexes for advanced search performance
   // These indexes optimize common filter combinations
   @@index([category, status])
@@ -456,20 +460,20 @@ model DevelopmentRequest {
 }
 
 model Proposal {
-  id                  String               @id @default(cuid())
-  requestId           String
-  sellerId            String
-  price               Int
-  timeline            String
-  description         String               @db.Text
-  status              String               @default("PENDING")
-  selectedAt          DateTime?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  request             DevelopmentRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
-  seller              User                 @relation("SellerProposals", fields: [sellerId], references: [id], onDelete: Cascade)
-  selectedRequest     DevelopmentRequest[] @relation("SelectedProposal")
-  escrows             RequestEscrow[]
+  id              String               @id @default(cuid())
+  requestId       String
+  sellerId        String
+  price           Int
+  timeline        String
+  description     String               @db.Text
+  status          String               @default("PENDING")
+  selectedAt      DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  request         DevelopmentRequest   @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  seller          User                 @relation("SellerProposals", fields: [sellerId], references: [id], onDelete: Cascade)
+  selectedRequest DevelopmentRequest[] @relation("SelectedProposal")
+  escrows         RequestEscrow[]
 
   @@index([requestId])
   @@index([sellerId])
@@ -642,4 +646,103 @@ enum ReviewStatus {
   PUBLISHED
   REJECTED
   DELETED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum AnnouncementType {
+  INFO
+  WARNING
+  MAINTENANCE
+}
+
+// ==========================================
+// Admin Feature Models
+// ==========================================
+
+model SupportTicket {
+  id          String                @id @default(cuid())
+  user_id     String
+  subject     String
+  description String                @db.Text
+  status      SupportTicketStatus   @default(OPEN)
+  priority    SupportTicketPriority @default(MEDIUM)
+  assigned_to String?
+  resolution  String?               @db.Text
+  created_at  DateTime              @default(now())
+  updated_at  DateTime              @updatedAt
+  resolved_at DateTime?
+  user        User                  @relation("TicketReporter", fields: [user_id], references: [id], onDelete: Cascade)
+  assignee    User?                 @relation("TicketAssignee", fields: [assigned_to], references: [id])
+
+  @@index([user_id])
+  @@index([assigned_to])
+  @@index([status])
+  @@index([priority])
+  @@index([created_at])
+}
+
+model Announcement {
+  id         String           @id @default(cuid())
+  title      String
+  content    String           @db.Text
+  type       AnnouncementType @default(INFO)
+  is_active  Boolean          @default(true)
+  start_date DateTime?
+  end_date   DateTime?
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
+
+  @@index([is_active])
+  @@index([type])
+  @@index([start_date, end_date])
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  slug        String     @unique
+  description String?
+  parent_id   String?
+  sort_order  Int        @default(0)
+  is_active   Boolean    @default(true)
+  created_at  DateTime   @default(now())
+  updated_at  DateTime   @updatedAt
+  parent      Category?  @relation("CategoryHierarchy", fields: [parent_id], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+
+  @@index([parent_id])
+  @@index([is_active])
+  @@index([sort_order])
+  @@index([slug])
+}
+
+model SystemSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updated_at  DateTime @updatedAt
+  updated_by  String?
+  updater     User?    @relation("SettingsUpdater", fields: [updated_by], references: [id])
+
+  @@index([key])
 }
