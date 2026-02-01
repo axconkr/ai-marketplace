@@ -14,6 +14,7 @@ import {
 } from '@/lib/api/response';
 import { ProductIdSchema } from '@/lib/validations/product';
 import { getProductById, approveProduct } from '@/lib/services/product';
+import { notifyProductApproved } from '@/lib/services/notification-service';
 
 interface RouteContext {
   params: { id: string };
@@ -42,12 +43,12 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return notFoundResponse('Product');
     }
 
-    // Approve product (pending -> active)
     try {
       const product = await approveProduct(id);
 
-      // TODO: Send notification to seller
-      // await notifySeller('product_approved', product);
+      await notifyProductApproved(id).catch((err) =>
+        console.error('Failed to notify seller:', err)
+      );
 
       return successResponse({
         message: 'Product approved successfully',

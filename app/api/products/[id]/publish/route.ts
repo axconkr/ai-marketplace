@@ -14,6 +14,8 @@ import {
 } from '@/lib/api/response';
 import { ProductIdSchema } from '@/lib/validations/product';
 import { getProductById, publishProduct } from '@/lib/services/product';
+import { createNotification } from '@/lib/services/notification-service';
+import { prisma } from '@/lib/prisma';
 
 interface RouteContext {
   params: { id: string };
@@ -47,12 +49,26 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return forbiddenResponse('You can only publish your own products');
     }
 
-    // Publish product (draft -> pending)
     try {
       const product = await publishProduct(id);
 
-      // TODO: Send notification to admin for approval
-      // await notifyAdmin('product_pending_approval', product);
+      const admins = await prisma.user.findMany({
+        where: { role: 'admin' },
+        select: { id: true },
+      });
+
+      await Promise.all(
+        admins.map((admin) =>
+          createNotification({
+            userId: admin.id,
+            type: 'PRODUCT_APPROVED',
+            title: '새 상품 승인 대기',
+            message: `${product.name} 상품이 승인 대기 중입니다`,
+            link: '/admin/products?status=pending',
+            data: { productId: id },
+          }).catch((err) => console.error('Failed to notify admin:', err))
+        )
+      );
 
       return successResponse({
         message: 'Product submitted for approval',

@@ -4,6 +4,7 @@ import {
   generateNotificationEmail,
   generateNotificationText,
 } from '../email/notification-templates';
+import { sendEmail as resendSendEmail, sendNotificationEmail as resendNotification } from '../email/resend';
 
 const prisma = new PrismaClient();
 
@@ -26,62 +27,47 @@ interface NotificationEmailData {
   data?: any;
 }
 
-/**
- * Send email (placeholder - integrate with actual email service)
- */
 async function sendEmail(emailData: EmailData) {
-  console.log('📧 Email to send:', emailData);
-  // TODO: Integrate with SendGrid, AWS SES, or other email service
-  // Example with SendGrid:
-  // const msg = {
-  //   to: emailData.to,
-  //   from: 'noreply@marketplace.com',
-  //   subject: emailData.subject,
-  //   templateId: getTemplateId(emailData.template),
-  //   dynamicTemplateData: emailData.data,
-  // };
-  // await sgMail.send(msg);
-}
-
-/**
- * Send notification email using template
- */
-export async function sendEmailNotification(data: NotificationEmailData) {
-  const html = generateNotificationEmail(data);
-  const text = generateNotificationText(data);
-
-  // In production, use actual email service
-  console.log('📧 Notification email to send:', {
-    to: data.to,
-    subject: data.title,
-    type: data.type,
+  const html = generateNotificationEmail({
+    name: emailData.data.verifierName || emailData.data.sellerName || 'there',
+    type: 'SYSTEM_ANNOUNCEMENT' as NotificationType,
+    title: emailData.subject,
+    message: JSON.stringify(emailData.data),
+    link: emailData.data.link,
+  });
+  const text = generateNotificationText({
+    name: emailData.data.verifierName || emailData.data.sellerName || 'there',
+    type: 'SYSTEM_ANNOUNCEMENT' as NotificationType,
+    title: emailData.subject,
+    message: JSON.stringify(emailData.data),
+    link: emailData.data.link,
   });
 
-  // TODO: Integrate with email service
-  // Example with SendGrid:
-  // const sgMail = require('@sendgrid/mail');
-  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  // await sgMail.send({
-  //   to: data.to,
-  //   from: process.env.FROM_EMAIL,
-  //   subject: data.title,
-  //   html,
-  //   text,
-  // });
+  try {
+    await resendSendEmail({
+      to: emailData.to,
+      subject: emailData.subject,
+      html,
+      text,
+    });
+  } catch (error) {
+    console.error('[EmailNotifications] Failed to send email:', error);
+  }
+}
 
-  // Example with AWS SES:
-  // const ses = new AWS.SES({ region: 'us-east-1' });
-  // await ses.sendEmail({
-  //   Source: process.env.FROM_EMAIL,
-  //   Destination: { ToAddresses: [data.to] },
-  //   Message: {
-  //     Subject: { Data: data.title },
-  //     Body: {
-  //       Html: { Data: html },
-  //       Text: { Data: text },
-  //     },
-  //   },
-  // }).promise();
+export async function sendEmailNotification(data: NotificationEmailData) {
+  try {
+    await resendNotification(
+      data.to,
+      data.name || null,
+      data.type,
+      data.title,
+      data.message,
+      data.link
+    );
+  } catch (error) {
+    console.error('[EmailNotifications] Failed to send notification:', error);
+  }
 }
 
 /**

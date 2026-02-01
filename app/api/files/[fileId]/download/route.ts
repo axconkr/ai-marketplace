@@ -10,7 +10,7 @@ import {
   canAccessFile,
   incrementDownloadCount,
 } from '@/lib/services/file';
-import { storage } from '@/lib/storage';
+import { SupabaseStorage } from '@/lib/storage/supabase';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -70,11 +70,26 @@ export async function GET(
       }
     } else {
       // For Supabase, redirect to signed URL
-      // TODO: Implement Supabase signed URL generation
-      return NextResponse.json(
-        { error: 'Supabase download not implemented yet' },
-        { status: 501 }
-      );
+      try {
+        const supabaseStorage = new SupabaseStorage();
+        const signedUrl = await supabaseStorage.getSignedUrl(file.path, 3600);
+        
+        // Increment download count before redirect
+        await incrementDownloadCount(fileId);
+        
+        // Redirect to signed URL
+        return NextResponse.redirect(signedUrl, {
+          headers: {
+            'Cache-Control': 'private, max-age=60',
+          },
+        });
+      } catch (error) {
+        console.error('Supabase signed URL error:', error);
+        return NextResponse.json(
+          { error: 'Failed to generate download URL' },
+          { status: 500 }
+        );
+      }
     }
 
     // Increment download count
@@ -90,7 +105,7 @@ export async function GET(
     headers.set('Content-Length', file.size.toString());
     headers.set('Cache-Control', 'private, max-age=3600');
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers,
     });
