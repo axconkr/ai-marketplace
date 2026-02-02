@@ -49,45 +49,60 @@ export default function VerifierEarningsDashboard() {
   const [breakdown, setBreakdown] = useState<EarningsBreakdown[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // TODO: Get actual verifier ID from auth
-  const verifierId = 'demo-verifier-id';
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch current month earnings
-        const currentRes = await fetch(
-          `/api/verifier/earnings/current?verifierId=${verifierId}`
-        );
+        const currentRes = await fetch('/api/verifier/earnings/current', {
+          credentials: 'include',
+        });
+        if (!currentRes.ok) {
+          if (currentRes.status === 403) {
+            setError('인증 전문가만 접근할 수 있습니다.');
+            return;
+          }
+          throw new Error('Failed to fetch earnings');
+        }
         const currentData = await currentRes.json();
         setCurrentEarnings(currentData);
 
-        // Fetch breakdown
-        const breakdownRes = await fetch(
-          `/api/verifier/earnings/breakdown?verifierId=${verifierId}&period=current`
-        );
-        const breakdownData = await breakdownRes.json();
-        setBreakdown(breakdownData.breakdown);
+        const breakdownRes = await fetch('/api/verifier/earnings/breakdown?period=current', {
+          credentials: 'include',
+        });
+        if (breakdownRes.ok) {
+          const breakdownData = await breakdownRes.json();
+          setBreakdown(breakdownData.breakdown || []);
+        }
 
-        // Fetch settlements
-        const settlementsRes = await fetch(
-          `/api/verifier/settlements?verifierId=${verifierId}`
-        );
-        const settlementsData = await settlementsRes.json();
-        setSettlements(settlementsData.settlements);
-      } catch (error) {
-        console.error('Failed to fetch earnings data:', error);
+        const settlementsRes = await fetch('/api/verifier/settlements', {
+          credentials: 'include',
+        });
+        if (settlementsRes.ok) {
+          const settlementsData = await settlementsRes.json();
+          setSettlements(settlementsData.settlements || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch earnings data:', err);
+        setError('수익 데이터를 불러오는데 실패했습니다.');
       } finally {
         setLoading(false);
       }
     }
 
     fetchData();
-  }, [verifierId]);
+  }, []);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return <div className="p-6">로딩 중...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-red-600">{error}</div>
+      </div>
+    );
   }
 
   return (

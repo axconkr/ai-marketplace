@@ -53,6 +53,7 @@ model User {
   assignedTickets         SupportTicket[]      @relation("TicketAssignee")
   systemSettingsUpdates   SystemSettings[]     @relation("SettingsUpdater")
   passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
 
   @@index([email])
   @@index([oauthProvider, oauthId])
@@ -761,6 +762,21 @@ model SystemSettings {
 model PasswordResetToken {
   id         String    @id @default(cuid())
   token      String    @unique // Hashed token (bcrypt)
+  user_id    String
+  expires_at DateTime
+  used       Boolean   @default(false)
+  used_at    DateTime?
+  created_at DateTime  @default(now())
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([user_id])
+  @@index([expires_at])
+}
+
+model EmailVerificationToken {
+  id         String    @id @default(cuid())
+  token      String    @unique
   user_id    String
   expires_at DateTime
   used       Boolean   @default(false)

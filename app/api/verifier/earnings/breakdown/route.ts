@@ -1,19 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 import { getEarningsBreakdown } from '@/lib/services/verifier-earnings';
 import { startOfMonth, endOfMonth, subMonths } from 'date-fns';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const verifierId = searchParams.get('verifierId');
-    const period = searchParams.get('period'); // 'current', 'last', 'all'
-
-    if (!verifierId) {
+    const user = await requireAuth(request);
+    
+    if (user.role !== 'verifier' && user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Verifier ID required' },
-        { status: 400 }
+        { error: 'Only verifiers can access earnings' },
+        { status: 403 }
       );
     }
+
+    const verifierId = user.userId;
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period');
 
     let periodStart: Date | undefined;
     let periodEnd: Date | undefined;

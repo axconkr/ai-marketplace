@@ -9,6 +9,7 @@ import { prisma } from '@/lib/prisma';
 import { requireAuth, comparePasswords, hashPassword } from '@/lib/auth';
 import { passwordChangeSchema } from '@/lib/validators/password';
 import { rateLimit } from '@/lib/rate-limit';
+import { sendPasswordChangedEmail } from '@/lib/email/resend';
 
 /**
  * Rate limiter for password change attempts
@@ -123,16 +124,9 @@ export async function PATCH(request: NextRequest) {
     });
     */
 
-    // Optionally: Send email notification about password change
-    // This helps users detect unauthorized changes
-    // TODO: Implement email notification
-    /*
-    await sendPasswordChangedEmail({
-      to: dbUser.email,
-      name: dbUser.name || undefined,
-      timestamp: new Date(),
-    });
-    */
+    sendPasswordChangedEmail(dbUser.email, dbUser.name).catch((err) =>
+      console.error('Failed to send password changed notification:', err)
+    );
 
     return NextResponse.json(
       {

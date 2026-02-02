@@ -1,18 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 import { getVerifierSettlementHistory } from '@/lib/services/verifier-earnings';
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const verifierId = searchParams.get('verifierId');
-    const limit = parseInt(searchParams.get('limit') || '12', 10);
-
-    if (!verifierId) {
+    const user = await requireAuth(request);
+    
+    if (user.role !== 'verifier' && user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Verifier ID required' },
-        { status: 400 }
+        { error: 'Only verifiers can access settlements' },
+        { status: 403 }
       );
     }
+
+    const verifierId = user.userId;
+    const { searchParams } = new URL(request.url);
+    const limit = parseInt(searchParams.get('limit') || '12', 10);
 
     const settlements = await getVerifierSettlementHistory(verifierId, limit);
 

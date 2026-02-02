@@ -1,26 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAuth } from '@/lib/auth';
 import { getCurrentMonthEarnings, getPendingPayouts } from '@/lib/services/verifier-earnings';
 
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Add authentication
-    // const user = await requireAuth(request);
-    // if (user.role !== 'verifier') {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-    // }
-
-    // For now, get verifier ID from query params
-    const { searchParams } = new URL(request.url);
-    const verifierId = searchParams.get('verifierId');
-
-    if (!verifierId) {
+    const user = await requireAuth(request);
+    
+    if (user.role !== 'verifier' && user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Verifier ID required' },
-        { status: 400 }
+        { error: 'Only verifiers can access earnings' },
+        { status: 403 }
       );
     }
 
-    // Get current month earnings
+    const verifierId = user.userId;
     const earnings = await getCurrentMonthEarnings(verifierId);
 
     // Get pending payouts

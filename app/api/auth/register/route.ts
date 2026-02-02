@@ -1,14 +1,11 @@
 import { UserRole } from '@/src/lib/auth/types';
-/**
- * User Registration API Endpoint
- * POST /api/auth/register
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import crypto from 'crypto';
 import { prisma } from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth';
 import { generateTokenPair } from '@/src/lib/auth/jwt';
+import { sendEmailVerification } from '@/lib/email/resend';
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -78,6 +75,19 @@ export async function POST(request: NextRequest) {
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
       },
     });
+
+    // Send verification email (fire and forget)
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    await prisma.emailVerificationToken.create({
+      data: {
+        token: verificationToken,
+        user_id: user.id,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
+    });
+    sendEmailVerification(user.email, user.name, verificationToken).catch((err) =>
+      console.error('Failed to send verification email:', err)
+    );
 
     // Create response with cookies
     const response = NextResponse.json(
