@@ -84,6 +84,7 @@ model Product {
   status              String           @default("draft")
   category            String?
   download_count      Int              @default(0)
+  view_count          Int              @default(0)
   verification_level  Int              @default(0)
   verification_badges String[]
   verification_score  Float?
@@ -108,6 +109,7 @@ model Product {
   @@index([rating_average])
   @@index([price])
   @@index([download_count])
+  @@index([view_count])
   @@index([createdAt])
   // Composite indexes for advanced search performance
   // These indexes optimize common filter combinations

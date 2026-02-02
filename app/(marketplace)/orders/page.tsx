@@ -14,8 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Package, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Package, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { Order } from '@/lib/api/orders';
+import { exportToCSV, formatBuyerOrdersForExport } from '@/lib/utils/export';
 
 export default function OrdersPage() {
   const [page, setPage] = useState(1);
@@ -58,8 +59,14 @@ export default function OrdersPage() {
   };
 
   const handleRefundSuccess = () => {
-    // Refresh orders list
     setRefundModalOpen(false);
+  };
+
+  const handleExport = () => {
+    if (!data?.orders || data.orders.length === 0) return;
+    const formattedOrders = formatBuyerOrdersForExport(data.orders);
+    const filename = `orders_${new Date().toISOString().split('T')[0]}.csv`;
+    exportToCSV(formattedOrders, filename);
   };
 
   if (isLoading) {
@@ -95,14 +102,22 @@ export default function OrdersPage() {
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="mb-2 flex items-center gap-2 text-3xl font-bold">
-          <Package className="h-8 w-8" />
-          내 주문
-        </h1>
-        <p className="text-gray-600">
-          구매한 상품을 확인하고 관리하세요
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="mb-2 flex items-center gap-2 text-3xl font-bold">
+            <Package className="h-8 w-8" />
+            내 주문
+          </h1>
+          <p className="text-gray-600">
+            구매한 상품을 확인하고 관리하세요
+          </p>
+        </div>
+        {orders.length > 0 && (
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            CSV 내보내기
+          </Button>
+        )}
       </div>
 
       {/* Filters */}

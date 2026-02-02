@@ -51,6 +51,19 @@ export function formatOrdersForExport(orders: any[]) {
   }));
 }
 
+export function formatBuyerOrdersForExport(orders: any[]) {
+  return orders.map(order => ({
+    'Order ID': order.id,
+    'Date': new Date(order.createdAt).toLocaleDateString(),
+    'Product': order.product?.name || 'Unknown',
+    'Amount': order.amount,
+    'Currency': order.currency,
+    'Status': order.status,
+    'Payment Method': order.payment_provider || 'N/A',
+    'Paid At': order.paid_at ? new Date(order.paid_at).toLocaleDateString() : 'N/A'
+  }));
+}
+
 export function formatProductsForExport(products: any[]) {
   return products.map(product => ({
     'Product ID': product.id,

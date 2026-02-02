@@ -3,7 +3,7 @@
  * Business logic for file operations
  */
 
-import { PrismaClient, FileStatus } from '@prisma/client';
+import { PrismaClient, FileStatus, OrderStatus } from '@prisma/client';
 import { storage } from '../storage';
 import {
   validateFile,
@@ -274,11 +274,30 @@ export async function canAccessFile(
   // Public files (no product) are accessible to authenticated users
   if (!file.product_id && userId) return true;
 
-  // Product files require purchase (TODO: implement purchase check)
+  // Product files require purchase verification
   if (file.product && userId) {
-    // TODO: Check if user purchased the product
-    // For now, allow access to published products
-    return file.product.status === 'published';
+    // Free products (price = 0) are accessible to all authenticated users
+    if (file.product.price === 0) {
+      return file.product.status === 'active';
+    }
+
+    // Seller always has access to their own product files
+    if (file.product.seller_id === userId) {
+      return true;
+    }
+
+    // Check if user has purchased the product with valid status
+    const validPurchase = await prisma.order.findFirst({
+      where: {
+        buyer_id: userId,
+        product_id: file.product_id!,
+        status: {
+          in: [OrderStatus.PAID, OrderStatus.COMPLETED],
+        },
+      },
+    });
+
+    return !!validPurchase;
   }
 
   return false;
