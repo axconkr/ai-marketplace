@@ -10,7 +10,9 @@ import {
   downloadOrderFiles,
   getReceipt,
   checkRefundEligibility,
+  Order,
 } from '@/lib/api/orders';
+import { apiFetch } from '@/lib/api/error-handler';
 
 /**
  * Get all orders query
@@ -73,5 +75,18 @@ export function useRefundEligibility(orderId: string | null) {
     queryKey: ['refund-eligibility', orderId],
     queryFn: () => checkRefundEligibility(orderId!),
     enabled: !!orderId,
+  });
+}
+
+/**
+ * Get orders by checkout session ID
+ */
+export function useOrdersByCheckoutSession(sessionId: string | null) {
+  return useQuery({
+    queryKey: ['orders', 'checkout-session', sessionId],
+    queryFn: () =>
+      apiFetch<{ orders: Order[]; total: number }>(`/orders?checkoutSessionId=${sessionId}`),
+    enabled: !!sessionId,
+    select: (data) => data.orders,
   });
 }

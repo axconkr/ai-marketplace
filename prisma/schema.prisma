@@ -145,34 +145,36 @@ model File {
 }
 
 model Order {
-  id               String      @id @default(cuid())
-  buyer_id         String
-  product_id       String
-  amount           Float
-  currency         String
-  platform_fee     Float
-  seller_amount    Float
-  status           OrderStatus @default(PENDING)
-  payment_provider String?
-  refund_requested Boolean     @default(false)
-  refund_reason    String?
-  access_granted   Boolean     @default(false)
-  download_url     String?
-  download_expires DateTime?
-  paid_at          DateTime?
-  refunded_at      DateTime?
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  buyer            User        @relation("OrderBuyer", fields: [buyer_id], references: [id], onDelete: Cascade)
-  product          Product     @relation(fields: [product_id], references: [id], onDelete: Cascade)
-  payment          Payment?
-  refund           Refund?
-  review           Review?
+  id                  String      @id @default(cuid())
+  buyer_id            String
+  product_id          String
+  amount              Float
+  currency            String
+  platform_fee        Float
+  seller_amount       Float
+  status              OrderStatus @default(PENDING)
+  payment_provider    String?
+  checkout_session_id String? // Links multiple orders from same cart checkout
+  refund_requested    Boolean     @default(false)
+  refund_reason       String?
+  access_granted      Boolean     @default(false)
+  download_url        String?
+  download_expires    DateTime?
+  paid_at             DateTime?
+  refunded_at         DateTime?
+  createdAt           DateTime    @default(now())
+  updatedAt           DateTime    @updatedAt
+  buyer               User        @relation("OrderBuyer", fields: [buyer_id], references: [id], onDelete: Cascade)
+  product             Product     @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  payment             Payment?
+  refund              Refund?
+  review              Review?
 
   @@index([buyer_id])
   @@index([product_id])
   @@index([status])
   @@index([paid_at])
+  @@index([checkout_session_id])
 }
 
 model Payment {
@@ -181,6 +183,7 @@ model Payment {
   provider             String
   provider_payment_id  String        @unique
   provider_customer_id String?
+  checkout_session_id  String? // Links to multi-product checkout session
   amount               Float
   currency             String
   status               PaymentStatus @default(PENDING)
@@ -196,6 +199,7 @@ model Payment {
 
   @@index([provider_payment_id])
   @@index([status])
+  @@index([checkout_session_id])
 }
 
 model Refund {
@@ -754,7 +758,7 @@ model SystemSettings {
 
 model PasswordResetToken {
   id         String    @id @default(cuid())
-  token      String    @unique  // Hashed token (bcrypt)
+  token      String    @unique // Hashed token (bcrypt)
   user_id    String
   expires_at DateTime
   used       Boolean   @default(false)

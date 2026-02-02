@@ -1,15 +1,27 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { useCart } from '@/contexts/cart-context'
+import { useCartCheckout } from '@/hooks/use-cart-checkout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils'
-import { Trash2, ShoppingBag, ArrowRight } from 'lucide-react'
+import { Trash2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
 
 export default function CartPage() {
   const { items, removeFromCart } = useCart()
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  
+  const cartCheckout = useCartCheckout({
+    onSuccess: (data) => {
+      window.location.href = `/checkout/success/session/${data.checkoutSessionId}`
+    },
+    onError: (error) => {
+      setCheckoutError(error.message)
+    },
+  })
 
   // Calculate totals
   const subtotal = items.reduce((sum, item) => sum + item.price, 0)
@@ -46,13 +58,21 @@ export default function CartPage() {
     )
   }
 
-  // Cart with items
   const handleCheckout = () => {
+    setCheckoutError(null)
+    
     if (items.length === 1) {
       window.location.href = `/checkout/${items[0].id}`
-    } else {
-      alert('여러 상품 결제 기능이 곧 추가됩니다!')
+      return
     }
+
+    const currencies = new Set(items.map(item => item.currency))
+    if (currencies.size > 1) {
+      setCheckoutError('모든 상품의 통화가 동일해야 합니다')
+      return
+    }
+
+    cartCheckout.mutate({ items })
   }
 
   return (
@@ -181,13 +201,28 @@ export default function CartPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
+                {checkoutError && (
+                  <div className="w-full text-sm text-red-600 bg-red-50 p-3 rounded-lg">
+                    {checkoutError}
+                  </div>
+                )}
                 <Button
                   size="lg"
                   className="w-full gap-2"
                   onClick={handleCheckout}
+                  disabled={cartCheckout.isPending}
                 >
-                  결제하기
-                  <ArrowRight className="h-5 w-5" />
+                  {cartCheckout.isPending ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      처리 중...
+                    </>
+                  ) : (
+                    <>
+                      결제하기
+                      <ArrowRight className="h-5 w-5" />
+                    </>
+                  )}
                 </Button>
                 <Link href="/products" className="w-full">
                   <Button variant="outline" size="lg" className="w-full">

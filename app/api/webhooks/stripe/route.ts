@@ -6,6 +6,7 @@
 import { NextRequest } from 'next/server';
 import { stripeProvider } from '@/lib/payment';
 import { completeOrder } from '@/lib/services/order';
+import { completeCheckoutSession } from '@/lib/services/cart-checkout';
 import { prisma } from '@/lib/db';
 import { successResponse, errorResponse } from '@/lib/api/response';
 
@@ -57,11 +58,43 @@ export async function POST(request: NextRequest) {
 // EVENT HANDLERS
 // ============================================================================
 
-/**
- * Handle payment succeeded event
- */
 async function handlePaymentSucceeded(event: any) {
-  const { orderId, paymentId, data } = event;
+  const { orderId, paymentId, data, metadata } = event;
+
+  const checkoutSessionId = metadata?.checkout_session_id;
+
+  if (checkoutSessionId) {
+    try {
+      const existingOrders = await prisma.order.findMany({
+        where: { checkout_session_id: checkoutSessionId },
+        select: { status: true },
+      });
+
+      if (existingOrders.length === 0) {
+        console.error(`[Stripe Webhook] No orders found for checkout session: ${checkoutSessionId}`);
+        return;
+      }
+
+      const allPaid = existingOrders.every(
+        (o) => o.status === 'PAID' || o.status === 'COMPLETED'
+      );
+      if (allPaid) {
+        console.log(`[Stripe Webhook] Checkout session already completed: ${checkoutSessionId}`);
+        return;
+      }
+
+      const paymentMethod = data.paymentMethod
+        ? await getPaymentMethodInfo(data.paymentMethod)
+        : undefined;
+
+      await completeCheckoutSession(checkoutSessionId, paymentMethod);
+      console.log(`[Stripe Webhook] Checkout session completed: ${checkoutSessionId}`);
+      return;
+    } catch (error) {
+      console.error(`[Stripe Webhook] Error completing checkout session ${checkoutSessionId}:`, error);
+      throw error;
+    }
+  }
 
   if (!orderId) {
     console.error('[Stripe Webhook] Missing orderId in payment.succeeded event');
@@ -69,7 +102,6 @@ async function handlePaymentSucceeded(event: any) {
   }
 
   try {
-    // Get order
     const order = await prisma.order.findUnique({
       where: { id: orderId },
     });
@@ -79,18 +111,15 @@ async function handlePaymentSucceeded(event: any) {
       return;
     }
 
-    // Skip if already paid
     if (order.status === 'PAID' || order.status === 'COMPLETED') {
       console.log(`[Stripe Webhook] Order already paid: ${orderId}`);
       return;
     }
 
-    // Extract payment method info
     const paymentMethod = data.paymentMethod
       ? await getPaymentMethodInfo(data.paymentMethod)
       : undefined;
 
-    // Complete order
     await completeOrder({
       orderId,
       paymentId,
