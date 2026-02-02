@@ -150,7 +150,6 @@ export async function deleteFile(
     throw new Error('Unauthorized to delete this file');
   }
 
-  // Soft delete (mark as deleted)
   await prisma.file.update({
     where: { id: fileId },
     data: {
@@ -158,9 +157,6 @@ export async function deleteFile(
       deleted_at: new Date(),
     },
   });
-
-  // TODO: Schedule hard delete after 30 days
-  // For now, we keep the file in storage for recovery
 }
 
 /**

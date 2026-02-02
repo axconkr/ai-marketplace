@@ -1,14 +1,7 @@
-/**
- * Verification Payment and Payout Services
- */
-
 import { prisma } from '@/lib/db';
 import { getPaymentProvider } from '@/lib/payment';
+import { processVerifierPayout as stripeProcessVerifierPayout } from '@/lib/payment/stripe-connect';
 import { startOfMonth, endOfMonth } from 'date-fns';
-
-// ============================================================================
-// CONSTANTS
-// ============================================================================
 
 export const VERIFICATION_FEES = {
   0: 0,       // Free
@@ -17,16 +10,9 @@ export const VERIFICATION_FEES = {
   3: 50000,   // $500 (Phase 2)
 } as const;
 
-const PLATFORM_SHARE_RATE = 0.3; // 30%
-const VERIFIER_SHARE_RATE = 0.7; // 70%
+const PLATFORM_SHARE_RATE = 0.3;
+const VERIFIER_SHARE_RATE = 0.7;
 
-// ============================================================================
-// PAYMENT PROCESSING
-// ============================================================================
-
-/**
- * Process verification fee payment
- */
 export async function processVerificationFee(
   productId: string,
   level: number,
@@ -103,18 +89,11 @@ export async function confirmVerificationPayment(
   return await prisma.verification.update({
     where: { id: verificationId },
     data: {
-      status: 'PENDING', // Now awaiting verifier assignment
+      status: 'PENDING',
     },
   });
 }
 
-// ============================================================================
-// VERIFIER PAYOUTS
-// ============================================================================
-
-/**
- * Create verifier payout record
- */
 export async function createVerifierPayout(
   verifierId: string,
   verificationId: string,
@@ -162,9 +141,6 @@ export async function createVerifierPayout(
   return payout;
 }
 
-/**
- * Process verifier payouts for a settlement period
- */
 export async function processVerifierPayouts(
   settlementId: string
 ) {
@@ -184,33 +160,34 @@ export async function processVerifierPayouts(
     throw new Error('Settlement not found');
   }
 
-  // Calculate total payout amount
   const totalPayout = settlement.verifierPayouts.reduce(
     (sum, payout) => sum + payout.amount,
     0
   );
 
-  // Process payout via Stripe Connect or bank transfer
-  // This is a placeholder - implement based on your payment provider
-  const payoutResult = await processStripeConnectPayout(
-    settlement.seller.stripe_account_id,
-    totalPayout,
-    'USD'
-  );
+  if (!settlement.seller.stripe_account_id) {
+    throw new Error('Verifier does not have a connected Stripe account');
+  }
+
+  const payoutResult = await stripeProcessVerifierPayout({
+    verifierStripeAccountId: settlement.seller.stripe_account_id,
+    amount: totalPayout,
+    currency: 'USD',
+    verificationId: settlement.verifierPayouts[0]?.verification_id || '',
+    settlementId: settlementId,
+  });
 
   // Update payout records
   await prisma.$transaction([
-    // Update settlement
     prisma.settlement.update({
       where: { id: settlementId },
       data: {
         status: 'PAID',
         payout_date: new Date(),
-        payout_reference: payoutResult.id,
+        payout_reference: payoutResult.transferId,
       },
     }),
 
-    // Update verifier payouts
     ...settlement.verifierPayouts.map((payout) =>
       prisma.verifierPayout.update({
         where: { id: payout.id },
@@ -227,13 +204,10 @@ export async function processVerifierPayouts(
     settlementId,
     totalPayout,
     payoutCount: settlement.verifierPayouts.length,
-    payoutReference: payoutResult.id,
+    payoutReference: payoutResult.transferId,
   };
 }
 
-/**
- * Get verifier earnings summary
- */
 export async function getVerifierEarnings(
   verifierId: string,
   options?: {
@@ -314,9 +288,6 @@ export async function getVerifierEarnings(
   };
 }
 
-/**
- * Get verifier performance stats
- */
 export async function getVerifierStats(verifierId: string) {
   const verifier = await prisma.user.findUnique({
     where: { id: verifierId },
@@ -366,44 +337,6 @@ export async function getVerifierStats(verifierId: string) {
   };
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
-/**
- * Process Stripe Connect payout
- * Placeholder - implement based on your Stripe integration
- */
-async function processStripeConnectPayout(
-  stripeAccountId: string | null,
-  amount: number,
-  currency: string
-): Promise<{ id: string }> {
-  if (!stripeAccountId) {
-    throw new Error('Stripe account not connected');
-  }
-
-  // TODO: Implement Stripe Connect payout
-  // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-  // const payout = await stripe.payouts.create(
-  //   {
-  //     amount,
-  //     currency: currency.toLowerCase(),
-  //   },
-  //   {
-  //     stripeAccount: stripeAccountId,
-  //   }
-  // );
-
-  // For now, return mock payout
-  return {
-    id: `po_mock_${Date.now()}`,
-  };
-}
-
-/**
- * Calculate verification fee breakdown
- */
 export function calculateVerificationFee(level: number) {
   const fee = VERIFICATION_FEES[level as keyof typeof VERIFICATION_FEES];
 

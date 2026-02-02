@@ -54,6 +54,7 @@ model User {
   systemSettingsUpdates   SystemSettings[]     @relation("SettingsUpdater")
   passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+  bankVerifications       BankVerification[]
 
   @@index([email])
   @@index([oauthProvider, oauthId])
@@ -787,4 +788,58 @@ model EmailVerificationToken {
   @@index([token])
   @@index([user_id])
   @@index([expires_at])
+}
+
+model BankVerification {
+  id              String                   @id @default(cuid())
+  user_id         String
+  bank_name       String
+  bank_account    String
+  account_holder  String
+  verification_code String
+  status          BankVerificationStatus   @default(PENDING)
+  attempts        Int                      @default(0)
+  expires_at      DateTime
+  verified_at     DateTime?
+  created_at      DateTime                 @default(now())
+  updated_at      DateTime                 @updatedAt
+  user            User                     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([verification_code])
+  @@index([status])
+  @@index([expires_at])
+}
+
+enum BankVerificationStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+  FAILED
+}
+
+model EmailQueue {
+  id           String          @id @default(cuid())
+  to           String
+  subject      String
+  html         String          @db.Text
+  text         String?         @db.Text
+  status       EmailQueueStatus @default(PENDING)
+  attempts     Int             @default(0)
+  last_error   String?
+  scheduled_at DateTime        @default(now())
+  sent_at      DateTime?
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
+
+  @@index([status])
+  @@index([scheduled_at])
+  @@index([created_at])
+}
+
+enum EmailQueueStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
 }

@@ -5,6 +5,16 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["icn1"],
+  "crons": [
+    {
+      "path": "/api/cron/cleanup-files",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/process-emails",
+      "schedule": "*/5 * * * *"
+    }
+  ],
   "functions": {
     "app/api/**/*.ts": {
       "maxDuration": 30

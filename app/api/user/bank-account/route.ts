@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/db';
+import { initiateBankVerification, getVerificationStatus } from '@/lib/services/bank-verification';
 
-const prisma = new PrismaClient();
-
-/**
- * GET /api/user/bank-account - Get user's bank account details
- */
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -29,7 +25,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    const verificationStatus = await getVerificationStatus(userId);
+
+    return NextResponse.json({
+      ...user,
+      verification: verificationStatus,
+    });
   } catch (error) {
     console.error('Error fetching bank account:', error);
     return NextResponse.json(
@@ -39,9 +40,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * PUT /api/user/bank-account - Update user's bank account details
- */
 export async function PUT(request: NextRequest) {
   try {
     const userId = request.headers.get('x-user-id');
@@ -98,13 +96,23 @@ export async function PUT(request: NextRequest) {
       },
     });
 
-    // TODO: Trigger bank account verification process
-    // In production, send 1원 deposit and create verification record
-    // if (isChangingAccount || !currentUser?.bank_verified) {
-    //   await initiateBankVerification(userId, bank_account);
-    // }
+    let verificationInitiated = false;
+    if (isChangingAccount || !currentUser?.bank_verified) {
+      try {
+        await initiateBankVerification(userId, bank_name, bank_account, account_holder);
+        verificationInitiated = true;
+      } catch (error) {
+        console.error('Failed to initiate bank verification:', error);
+      }
+    }
 
-    return NextResponse.json(user);
+    const verificationStatus = await getVerificationStatus(userId);
+
+    return NextResponse.json({
+      ...user,
+      verificationInitiated,
+      verification: verificationStatus,
+    });
   } catch (error) {
     console.error('Error updating bank account:', error);
     return NextResponse.json(

@@ -1,6 +1,8 @@
 import { PrismaClient, NotificationType } from '@prisma/client';
 import { sendEmailNotification } from './email-notifications';
 import { eventBus, EVENTS } from '../events';
+import { queueBulkEmails } from './email-queue';
+import { generateNotificationEmail, generateNotificationText } from '../email/notification-templates';
 
 const prisma = new PrismaClient();
 
@@ -123,7 +125,50 @@ export async function createBulkNotifications(notifications: CreateNotificationP
     })),
   });
 
-  // TODO: Send bulk emails asynchronously
+  const users = await prisma.user.findMany({
+    where: { id: { in: notifications.map(n => n.userId) } },
+    select: { id: true, email: true, name: true, notification_settings: true },
+  });
+
+  const userMap = new Map(users.map(u => [u.id, u]));
+
+  const emailsToQueue = notifications
+    .map(n => {
+      const user = userMap.get(n.userId);
+      if (!user || !user.email) return null;
+
+      const settings = (user.notification_settings as any) || {};
+      const category = getNotificationCategory(n.type);
+      if (settings[category]?.email === false) return null;
+
+      return {
+        to: user.email,
+        subject: n.title,
+        html: generateNotificationEmail({
+          name: user.name || 'there',
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          link: n.link,
+        }),
+        text: generateNotificationText({
+          name: user.name || 'there',
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          link: n.link,
+        }),
+      };
+    })
+    .filter((e): e is NonNullable<typeof e> => e !== null);
+
+  if (emailsToQueue.length > 0) {
+    try {
+      await queueBulkEmails(emailsToQueue);
+    } catch (error) {
+      console.error('Failed to queue bulk emails:', error);
+    }
+  }
 
   // Emit real-time events for each notification
   // Note: createMany returns counts, so we might need to fetch them if we want to stream full objects,
