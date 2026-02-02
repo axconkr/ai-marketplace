@@ -5,6 +5,7 @@
 
 import { prisma } from '@/lib/db';
 import { sendVerificationComplete } from '../email-notifications';
+import { notifyVerificationCompleted } from '../notification-service';
 import type { ManualReview, SubmitReviewParams } from './types';
 import { createVerifierPayout } from './payment';
 
@@ -131,6 +132,7 @@ export async function submitVerificationReview(params: SubmitReviewParams) {
   });
 
   // 5. Send notifications
+  await notifyVerificationCompleted(verificationId);
   await sendVerificationComplete(verificationId);
 
   return result;

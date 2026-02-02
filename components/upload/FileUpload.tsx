@@ -6,8 +6,9 @@
  */
 
 import { useState, useRef, DragEvent, ChangeEvent } from 'react';
-import { Upload, X, FileIcon, AlertCircle } from 'lucide-react';
+import { Upload, X, FileIcon, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { ALLOWED_EXTENSIONS, FILE_SIZE_LIMITS } from '@/lib/validations/file';
+import { validateN8nWorkflowString } from '@/lib/utils/n8n-validator';
 
 interface UploadedFile {
   id: string;
@@ -108,7 +109,32 @@ export default function FileUpload({
     setFiles((prev) => [...prev, ...validatedFiles]);
 
     // Auto-upload after adding files
-    validatedFiles.forEach((uploadFile) => {
+    validatedFiles.forEach(async (uploadFile) => {
+      // n8n Workflow Validation for .json files
+      if (uploadFile.file.name.endsWith('.json')) {
+        try {
+          const content = await uploadFile.file.text();
+          const validation = validateN8nWorkflowString(content);
+
+          if (!validation.isValid) {
+            setFiles((prev) =>
+              prev.map((f) =>
+                f.id === uploadFile.id
+                  ? {
+                    ...f,
+                    status: 'error',
+                    error: `n8n Workflow 유효성 검사 실패: ${validation.errors[0]}`,
+                  }
+                  : f
+              )
+            );
+            return;
+          }
+        } catch (err) {
+          console.error('Failed to read file for validation:', err);
+        }
+      }
+
       uploadSingleFile(uploadFile);
     });
   };
@@ -155,11 +181,11 @@ export default function FileUpload({
             prev.map((f) =>
               f.id === uploadFile.id
                 ? {
-                    ...f,
-                    status: 'success',
-                    progress: 100,
-                    url: response.file.url,
-                  }
+                  ...f,
+                  status: 'success',
+                  progress: 100,
+                  url: response.file.url,
+                }
                 : f
             )
           );
@@ -199,11 +225,11 @@ export default function FileUpload({
         prev.map((f) =>
           f.id === uploadFile.id
             ? {
-                ...f,
-                status: 'error',
-                progress: 0,
-                error: errorMessage,
-              }
+              ...f,
+              status: 'error',
+              progress: 0,
+              error: errorMessage,
+            }
             : f
         )
       );
@@ -240,10 +266,9 @@ export default function FileUpload({
         className={`
           relative border-2 border-dashed rounded-lg p-8 text-center
           transition-colors cursor-pointer
-          ${
-            isDragging
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+          ${isDragging
+            ? 'border-blue-500 bg-blue-50'
+            : 'border-gray-300 hover:border-gray-400'
           }
         `}
         onDragEnter={handleDragEnter}

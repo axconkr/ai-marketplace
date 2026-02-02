@@ -34,6 +34,7 @@ import { CATEGORY_LABELS, PRICING_MODEL_LABELS } from '@/lib/validations/product
 import { useCart } from '@/contexts/cart-context';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useAuth } from '@/lib/auth-context';
+import { ReviewList } from '@/components/reviews/ReviewList';
 
 /**
  * Product Detail Page
@@ -356,13 +357,11 @@ export default function ProductDetailPage({ params }: PageProps) {
               <TabsContent value="reviews" className="mt-6">
                 <Card>
                   <CardContent className="pt-6">
-                    <div className="text-center py-12 text-muted-foreground">
-                      <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">아직 리뷰가 없습니다</p>
-                      <p className="text-xs mt-1">
-                        이 제품을 구매하고 첫 리뷰를 남겨주세요
-                      </p>
-                    </div>
+                    <ReviewList
+                      productId={product.id}
+                      currentUserId={isAuthenticated ? (id as string) : undefined}
+                      isProductSeller={product.seller_id === (isAuthenticated ? (id as string) : undefined)}
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -429,9 +428,8 @@ export default function ProductDetailPage({ params }: PageProps) {
                     aria-label={isInWishlist(product.id) ? '위시리스트에서 제거' : '위시리스트에 추가'}
                   >
                     <Heart
-                      className={`w-5 h-5 mr-2 ${
-                        isInWishlist(product.id) ? 'fill-current' : ''
-                      }`}
+                      className={`w-5 h-5 mr-2 ${isInWishlist(product.id) ? 'fill-current' : ''
+                        }`}
                     />
                     {isInWishlist(product.id) ? '저장됨' : '저장'}
                   </Button>

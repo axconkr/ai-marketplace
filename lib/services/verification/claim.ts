@@ -5,6 +5,7 @@
 
 import { prisma } from '@/lib/db';
 import { sendVerificationAssignment } from '../email-notifications';
+import { notifyVerificationClaimed } from '../notification-service';
 import { VerificationStatus } from '@prisma/client';
 
 // ============================================================================
@@ -87,6 +88,13 @@ export async function claimVerification(
   } catch (error) {
     // Log but don't fail the claim if notification fails
     console.error('Failed to send assignment notification:', error);
+  }
+
+  // 7. Send assignment notification to seller (Real-time)
+  try {
+    await notifyVerificationClaimed(verificationId);
+  } catch (error) {
+    console.error('Failed to send real-time notification to seller:', error);
   }
 
   return updated;

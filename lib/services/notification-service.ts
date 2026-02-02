@@ -1,5 +1,6 @@
 import { PrismaClient, NotificationType } from '@prisma/client';
 import { sendEmailNotification } from './email-notifications';
+import { eventBus, EVENTS } from '../events';
 
 const prisma = new PrismaClient();
 
@@ -33,6 +34,16 @@ function getNotificationCategory(type: NotificationType): string {
     REVIEW_RECEIVED: 'reviews',
     MESSAGE_RECEIVED: 'messages',
     SYSTEM_ANNOUNCEMENT: 'system',
+    REQUEST_CREATED: 'requests',
+    PROPOSAL_SUBMITTED: 'requests',
+    PROPOSAL_SELECTED: 'requests',
+    PROPOSAL_REJECTED: 'requests',
+    ESCROW_INITIATED: 'payments',
+    ESCROW_RELEASED: 'payments',
+    SUBSCRIPTION_CREATED: 'subscriptions',
+    SUBSCRIPTION_UPDATED: 'subscriptions',
+    SUBSCRIPTION_CANCELLED: 'subscriptions',
+    SUBSCRIPTION_PAYMENT_FAILED: 'subscriptions',
   };
   return categoryMap[type] || 'system';
 }
@@ -91,6 +102,9 @@ export async function createNotification(params: CreateNotificationParams) {
     }
   }
 
+  // Emit real-time event
+  eventBus.emit(EVENTS.NOTIFICATION_CREATED, notification);
+
   return notification;
 }
 
@@ -110,6 +124,26 @@ export async function createBulkNotifications(notifications: CreateNotificationP
   });
 
   // TODO: Send bulk emails asynchronously
+
+  // Emit real-time events for each notification
+  // Note: createMany returns counts, so we might need to fetch them if we want to stream full objects,
+  // or just stream the raw data if it's enough.
+  // For simplicity, we'll assume consumers can work with the data provided or fetch if needed.
+  // But usually, real-time stream needs the full object.
+  // Actually, createMany doesn't return the objects. Let's stick to notifying for individual creations for now
+  // or fetch them if needed. For bulk, we might just emit the IDs or the data.
+  notifications.forEach(n => {
+    eventBus.emit(EVENTS.NOTIFICATION_CREATED, {
+      user_id: n.userId,
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      link: n.link,
+      data: n.data,
+      created_at: new Date(),
+      read: false,
+    });
+  });
 
   return createdNotifications;
 }
@@ -429,6 +463,37 @@ export async function notifyVerificationAssigned(verificationId: string) {
       verificationId,
       level: verification.level,
       earning: verification.verifier_share,
+    },
+  });
+}
+
+export async function notifyVerificationClaimed(verificationId: string) {
+  const verification = await prisma.verification.findUnique({
+    where: { id: verificationId },
+    include: {
+      product: true,
+      verifier: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  if (!verification || !verification.verifier) {
+    throw new Error('Verification or verifier not found');
+  }
+
+  await createNotification({
+    userId: verification.product.seller_id,
+    type: 'VERIFICATION_ASSIGNED', // Reusing type or we could add VERIFICATION_CLAIMED
+    title: 'Verifier Assigned',
+    message: `Expert ${verification.verifier.name} has claimed the verification of ${verification.product.name} and is starting the review.`,
+    link: `/dashboard/verifications/${verificationId}`,
+    data: {
+      verificationId,
+      verifierName: verification.verifier.name,
+      level: verification.level,
     },
   });
 }
