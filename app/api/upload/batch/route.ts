@@ -12,7 +12,7 @@ const MAX_FILES_PER_REQUEST = 10;
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication
-    const user = verifyToken(request);
+    const user = await verifyToken(request);
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized - Authentication required' },

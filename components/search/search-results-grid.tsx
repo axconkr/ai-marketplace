@@ -49,22 +49,26 @@ export function SearchResultsGrid({
   const [isLoading, setIsLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
 
+  const safeParseFloat = (value: string | null): number | undefined => {
+    if (!value) return undefined;
+    const num = parseFloat(value);
+    return isNaN(num) ? undefined : num;
+  };
+
+  const safeParseInt = (value: string | null): number | undefined => {
+    if (!value) return undefined;
+    const num = parseInt(value, 10);
+    return isNaN(num) ? undefined : num;
+  };
+
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [filters, setFilters] = useState({
     category: searchParams.get('category') || undefined,
-    minPrice: searchParams.get('min_price')
-      ? parseFloat(searchParams.get('min_price')!)
-      : undefined,
-    maxPrice: searchParams.get('max_price')
-      ? parseFloat(searchParams.get('max_price')!)
-      : undefined,
-    minRating: searchParams.get('min_rating')
-      ? parseFloat(searchParams.get('min_rating')!)
-      : undefined,
-    verificationLevel: searchParams.get('verification_level')
-      ? parseInt(searchParams.get('verification_level')!, 10)
-      : undefined,
+    minPrice: safeParseFloat(searchParams.get('min_price')),
+    maxPrice: safeParseFloat(searchParams.get('max_price')),
+    minRating: safeParseFloat(searchParams.get('min_rating')),
+    verificationLevel: safeParseInt(searchParams.get('verification_level')),
   });
   const [sortBy, setSortBy] = useState(searchParams.get('sort_by') || 'newest');
   const [page, setPage] = useState(1);

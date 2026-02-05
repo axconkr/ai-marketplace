@@ -2,17 +2,18 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface SliderProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value'> {
   min?: number;
   max?: number;
   step?: number;
   value?: number[];
   onChange?: (value: number[]) => void;
+  onValueChange?: (value: number[]) => void;
 }
 
 const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
   (
-    { className, min = 0, max = 100, step = 1, value = [0], onChange, ...props },
+    { className, min = 0, max = 100, step = 1, value = [0], onChange, onValueChange, ...props },
     ref
   ) => {
     // Support both single and dual-handle sliders
@@ -32,6 +33,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
         : [newMin];
       setLocalValue(newValue);
       onChange?.(newValue);
+      onValueChange?.(newValue);
     };
 
     const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,6 +41,7 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
       const newValue = [localValue[0], Math.max(newMax, localValue[0])];
       setLocalValue(newValue);
       onChange?.(newValue);
+      onValueChange?.(newValue);
     };
 
     if (isDualHandle) {

@@ -49,7 +49,7 @@ export default function HomePage() {
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">
-                  <Link href="/register">판매자 등록하기</Link>
+                  <Link href="/register">시작하기</Link>
                 </Button>
               </div>
 
@@ -191,7 +191,7 @@ export default function HomePage() {
                 </div>
                 <h3 className="mb-2 text-xl font-semibold">구매 후 지원</h3>
                 <p className="text-muted-foreground">
-                  구매한 제품에 대한 지속적인 업데이트와 지원을 받으세요
+                  전문가로 구성된 집단에서 안정적이고 안전한 서비스를 받으세요
                 </p>
               </div>
             </div>

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import type { ProductSearchParams } from '@/lib/validations/product';
+import type { ProductSearchParams } from '@/lib/api/products';
 
 /**
  * Hook for managing product filters with URL state persistence
@@ -21,21 +21,22 @@ export function useProductFilters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // Helper to safely parse numbers from URL params (returns undefined for NaN)
+  const safeParseNumber = (value: string | null): number | undefined => {
+    if (!value) return undefined;
+    const num = Number(value);
+    return isNaN(num) ? undefined : num;
+  };
+
   // Parse filters from URL
   const filters: ProductSearchParams = {
-    page: Number(searchParams.get('page')) || 1,
-    limit: Number(searchParams.get('limit')) || 20,
+    page: safeParseNumber(searchParams.get('page')) || 1,
+    limit: safeParseNumber(searchParams.get('limit')) || 20,
     search: searchParams.get('search') || undefined,
     category: (searchParams.get('category') as any) || undefined,
-    min_price: searchParams.get('min_price')
-      ? Number(searchParams.get('min_price'))
-      : undefined,
-    max_price: searchParams.get('max_price')
-      ? Number(searchParams.get('max_price'))
-      : undefined,
-    verification_level: searchParams.get('verification_level')
-      ? Number(searchParams.get('verification_level'))
-      : undefined,
+    min_price: safeParseNumber(searchParams.get('min_price')),
+    max_price: safeParseNumber(searchParams.get('max_price')),
+    verification_level: safeParseNumber(searchParams.get('verification_level')),
     sort_by: (searchParams.get('sort_by') as any) || 'newest',
   };
 

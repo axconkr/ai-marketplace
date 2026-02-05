@@ -14,7 +14,7 @@
  */
 
 import { ProductFiltersEnhanced } from './product-filters-enhanced';
-import type { ProductSearchParams } from '@/lib/validations/product';
+import type { ProductSearchParams } from '@/lib/api/products';
 
 interface ProductFiltersProps {
   filters: ProductSearchParams;

@@ -5,17 +5,20 @@ import type {
 } from '@/lib/validations/product';
 import { apiFetch } from './error-handler';
 
-// Frontend search params (more user-friendly)
 export interface ProductSearchParams {
   query?: string; // Maps to 'search' in backend
+  search?: string;
   category?: string;
   min_price?: number;
   max_price?: number;
   verification_level?: number;
-  sort_by?: 'created_at' | 'price' | 'rating' | 'downloads';
-  sort_order?: 'asc' | 'desc';
+  sort_by?: 'newest' | 'popular' | 'price_asc' | 'price_desc' | 'rating';
   page?: number;
   limit?: number;
+  status?: string;
+  pricing_model?: string;
+  min_rating?: number;
+  seller_id?: string;
 }
 
 /**
@@ -41,6 +44,7 @@ export interface Product {
   id: string;
   seller_id: string;
   name: string;
+  short_description?: string | null;
   description: string;
   category: string;
   tags: string[];
@@ -49,6 +53,7 @@ export interface Product {
   currency: string;
   file_url: string | null;
   demo_url: string | null;
+  documentation_url?: string | null;
   thumbnail_url: string | null;
   image_urls: string[];
   verification_level: number;
@@ -92,17 +97,6 @@ export async function fetchProducts(
   if ('query' in params && params.query) {
     mappedParams.search = params.query;
     delete mappedParams.query;
-  }
-
-  // Map sort values for backend compatibility
-  if (mappedParams.sort_by) {
-    const sortMap: Record<string, string> = {
-      'created_at': 'newest',
-      'price': 'price_asc',
-      'rating': 'rating',
-      'downloads': 'popular',
-    };
-    mappedParams.sort_by = sortMap[mappedParams.sort_by] || mappedParams.sort_by;
   }
 
   Object.entries(mappedParams).forEach(([key, value]) => {

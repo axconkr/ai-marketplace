@@ -111,7 +111,7 @@ export function useCreateReview() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -163,7 +163,7 @@ export function useUpdateReview() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -207,7 +207,7 @@ export function useDeleteReview() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -253,7 +253,7 @@ export function useVoteReview() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -299,7 +299,7 @@ export function useAddSellerReply() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -346,7 +346,7 @@ export function useFlagReview() {
       toast({
         title: 'Error',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });

@@ -11,10 +11,12 @@ import {
   fetchVerifierStats,
   fetchMyVerifications,
   fetchMyAssignedVerifications,
-  type VerificationFilters,
-  type RequestVerificationInput,
-  type SubmitReviewInput,
 } from '@/lib/api/verifications';
+import type {
+  VerificationFilters,
+  RequestVerificationInput,
+  SubmitReviewInput,
+} from '@/lib/types/verification';
 
 /**
  * React Query hooks for verification operations

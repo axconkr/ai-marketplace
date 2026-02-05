@@ -15,7 +15,7 @@ import { ProductFiltersPanel } from './product-filters-panel';
 import { ProductSortSelect } from './product-sort-select';
 import { ProductFilterSummary } from './product-filter-summary';
 import { CATEGORY_LABELS } from '@/lib/validations/product';
-import type { ProductSearchParams } from '@/lib/validations/product';
+import type { ProductSearchParams } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 
 /**

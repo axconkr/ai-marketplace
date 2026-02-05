@@ -2,5 +2,7 @@
  * Upload Components Export
  */
 
-export { default as FileUpload } from './FileUpload';
-export { default as FileList } from './FileList';
+import FileUploadComponent from './FileUpload';
+import FileListComponent from './FileList';
+
+export { FileUploadComponent as FileUpload, FileListComponent as FileList };

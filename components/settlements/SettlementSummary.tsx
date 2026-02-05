@@ -61,7 +61,9 @@ export function SettlementSummary({ estimate, loading }: SettlementSummaryProps)
     endOfMonth(new Date()),
     new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
-  const progressPercentage = ((daysInMonth - daysUntilSettlement) / daysInMonth) * 100;
+  const progressPercentage = daysInMonth > 0 
+    ? Math.min(100, Math.max(0, ((daysInMonth - daysUntilSettlement) / daysInMonth) * 100))
+    : 0;
 
   return (
     <div className="space-y-4">

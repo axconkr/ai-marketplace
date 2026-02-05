@@ -17,6 +17,7 @@ export default function ProductsPage() {
   const [filters, setFilters] = useState<ProductSearchParams>({
     page: 1,
     limit: 20,
+    sort_by: 'newest',
   });
 
   const { data, isLoading, error } = useProducts(filters);

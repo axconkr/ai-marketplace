@@ -175,10 +175,11 @@ export const VERIFICATION_LEVELS = {
     features: ['File format check', 'Basic virus scan', 'Metadata validation'],
     badge: 'Verified',
     color: 'bg-gray-500',
+    comingSoon: false,
   },
   1: {
     name: 'Basic Review',
-    price: 50, // $50
+    price: 50,
     features: [
       'All Level 0',
       'Code quality check',
@@ -187,6 +188,7 @@ export const VERIFICATION_LEVELS = {
     ],
     badge: 'Reviewed',
     color: 'bg-blue-500',
+    comingSoon: false,
   },
   2: {
     name: 'Expert Review',

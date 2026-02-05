@@ -10,7 +10,7 @@ import { uploadFile } from '@/lib/services/file';
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication
-    const user = verifyToken(request);
+    const user = await verifyToken(request);
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized - Authentication required' },

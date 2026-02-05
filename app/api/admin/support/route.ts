@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
 
-    const validStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED'];
+    const validStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
     if (status && !validStatuses.includes(status)) {
       return badRequestResponse(
         `Invalid status. Must be one of: ${validStatuses.join(', ')}`

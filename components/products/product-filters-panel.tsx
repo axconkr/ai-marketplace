@@ -24,7 +24,7 @@ import {
   CATEGORY_LABELS,
   ProductCategory,
 } from '@/lib/validations/product';
-import type { ProductSearchParams } from '@/lib/validations/product';
+import type { ProductSearchParams } from '@/lib/api/products';
 import { cn } from '@/lib/utils';
 
 /**

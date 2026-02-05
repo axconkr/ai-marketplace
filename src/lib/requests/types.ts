@@ -98,10 +98,10 @@ export const listRequestsQuerySchema = z.object({
 });
 
 // Type exports
-export type CreateRequestInput = z.infer<typeof createRequestSchema>;
-export type UpdateRequestInput = z.infer<typeof updateRequestSchema>;
-export type CreateProposalInput = z.infer<typeof createProposalSchema>;
-export type UpdateProposalInput = z.infer<typeof updateProposalSchema>;
+export type CreateRequestInput = z.input<typeof createRequestSchema>;
+export type UpdateRequestInput = z.input<typeof updateRequestSchema>;
+export type CreateProposalInput = z.input<typeof createProposalSchema>;
+export type UpdateProposalInput = z.input<typeof updateProposalSchema>;
 export type SelectProposalInput = z.infer<typeof selectProposalSchema>;
 export type ListRequestsQuery = z.infer<typeof listRequestsQuerySchema>;
 
@@ -147,6 +147,7 @@ export type RequestWithDetails = Prisma.DevelopmentRequestGetPayload<{
           select: {
             id: true;
             name: true;
+            email: true;
             avatar: true;
           };
         };

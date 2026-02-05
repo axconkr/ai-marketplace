@@ -15,17 +15,17 @@ import { cn } from '@/lib/utils';
 
 interface ProductPreviewData {
   name: string;
-  short_description?: string;
+  short_description?: string | null;
   description: string;
   category: string;
-  tags: string[];
+  tags?: string[];
   price: number;
-  currency: string;
-  pricing_model: string;
-  thumbnail_url?: string;
-  image_urls: string[];
-  demo_url?: string;
-  documentation_url?: string;
+  currency?: string;
+  pricing_model?: string;
+  thumbnail_url?: string | null;
+  image_urls?: string[];
+  demo_url?: string | null;
+  documentation_url?: string | null;
 }
 
 interface ProductPreviewProps {

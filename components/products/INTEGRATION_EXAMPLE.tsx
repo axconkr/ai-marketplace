@@ -9,6 +9,7 @@
 import { ProductFiltersEnhanced } from './product-filters-enhanced';
 import { useProductFilters } from '@/hooks/use-product-filters';
 import { useProducts } from '@/hooks/use-products';
+import type { ProductSearchParams } from '@/lib/api/products';
 
 export function ProductsPageExample() {
   // URL-persisted filter state
@@ -29,7 +30,6 @@ export function ProductsPageExample() {
               totalResults={data?.pagination.total || 0}
               isLoading={isLoading}
               priceRange={{ min: 0, max: 1000 }}
-              categoryCounts={data?.categoryCounts}
             />
           </div>
         </aside>

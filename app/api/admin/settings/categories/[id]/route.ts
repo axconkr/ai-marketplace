@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { handleError, successResponse, badRequestResponse, notFoundResponse, conflictResponse } from '@/lib/api/response';
 import { updateCategory, deleteCategory } from '@/lib/services/admin/settings';
 
@@ -13,7 +14,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
     const { id } = params;
 
     return successResponse({ id });
@@ -33,7 +34,7 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
     const { id } = params;
     const body = await request.json();
 
@@ -72,7 +73,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
     const { id } = params;
 
     const result = await deleteCategory(id);

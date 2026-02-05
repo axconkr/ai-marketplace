@@ -43,7 +43,7 @@ export const ko = {
     price: '가격',
     category: '카테고리',
     status: '상태',
-    verification: '검증',
+    verificationLabel: '검증',
     rating: '평점',
     reviews: '리뷰',
     downloads: '다운로드',

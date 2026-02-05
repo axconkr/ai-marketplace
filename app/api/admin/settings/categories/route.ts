@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/src/lib/auth/types';
 import { handleError, successResponse, badRequestResponse, createdResponse, paginatedResponse } from '@/lib/api/response';
 import { listCategories, createCategory } from '@/lib/services/admin/settings';
 import { parseAdminListParams } from '../../_lib/middleware';
@@ -19,7 +20,7 @@ import { parseAdminListParams } from '../../_lib/middleware';
  */
 export async function GET(request: NextRequest) {
   try {
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
     const searchParams = request.nextUrl.searchParams;
     const params = parseAdminListParams(searchParams);
 
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    await requireRole(request, ['admin']);
+    await requireRole(request, [UserRole.ADMIN]);
     const body = await request.json();
     const { name, slug, description, parent_id, sort_order } = body;
 

@@ -106,6 +106,11 @@ const routeConfigs: RouteConfig[] = [
 
   // ===== Admin Routes =====
   {
+    pattern: /^\/admin$/,
+    requireAuth: true,
+    allowedRoles: [UserRole.ADMIN],
+  },
+  {
     pattern: /^\/admin\/.+$/,
     requireAuth: true,
     allowedRoles: [UserRole.ADMIN],

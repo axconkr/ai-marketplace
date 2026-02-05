@@ -122,7 +122,7 @@ export function ProposalCard({
                   {proposal.seller.avatar ? (
                     <img
                       src={proposal.seller.avatar}
-                      alt={proposal.seller.name}
+                      alt={proposal.seller.name ?? 'Seller'}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   ) : (
@@ -220,7 +220,7 @@ export function ProposalCard({
         <EscrowPaymentModal
           proposalId={proposal.id}
           amount={proposal.price}
-          sellerName={proposal.seller.name}
+          sellerName={proposal.seller.name ?? 'Unknown Seller'}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={() => {
             setShowPaymentModal(false);

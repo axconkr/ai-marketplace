@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
           email: profile.email,
           name: profile.name,
           avatar: profile.avatar,
-          role: UserRole.USER,
+          role: UserRole.BUYER,
           emailVerified: true, // OAuth providers verify email
           oauthProvider: profile.provider,
           oauthId: profile.id,
@@ -110,7 +110,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Create session
-    await setSession(user);
+    await setSession({
+      ...user,
+      role: user.role as UserRole,
+    });
 
     // Get redirect URL
     const redirectUrl = cookieStore.get('oauth_redirect')?.value || '/';

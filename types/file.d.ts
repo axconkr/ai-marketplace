@@ -112,20 +112,13 @@ export interface FileStats {
   byStatus: Record<FileStatus, number>;
 }
 
-declare module '@/components/upload' {
-  export interface FileUploadProps {
-    productId?: string;
-    maxFiles?: number;
-    onUploadComplete?: (files: Array<{ id: string; url: string }>) => void;
-    onUploadError?: (error: string) => void;
-  }
-
-  export interface FileListProps {
-    files: FileMetadata[];
-    onDelete?: (fileId: string) => void;
-    canDelete?: boolean;
-  }
-
-  export const FileUpload: React.FC<FileUploadProps>;
-  export const FileList: React.FC<FileListProps>;
+export interface FileItem {
+  id: string;
+  filename: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  url: string;
+  downloadCount: number;
+  createdAt: string;
 }

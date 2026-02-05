@@ -222,8 +222,9 @@ export const SellerIdSchema = z.object({
 // TYPE EXPORTS
 // ============================================================================
 
-export type ProductCreateInput = z.infer<typeof ProductCreateSchema>;
-export type ProductUpdateInput = z.infer<typeof ProductUpdateSchema>;
+export type ProductCreateInput = z.input<typeof ProductCreateSchema>;
+export type ProductCreateOutput = z.infer<typeof ProductCreateSchema>;
+export type ProductUpdateInput = z.input<typeof ProductUpdateSchema>;
 export type ProductSearchParams = z.infer<typeof ProductSearchSchema>;
 export type ProductIdParams = z.infer<typeof ProductIdSchema>;
 export type SellerIdParams = z.infer<typeof SellerIdSchema>;

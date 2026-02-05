@@ -61,7 +61,11 @@ export async function POST(request: NextRequest) {
       id: user.id,
       email: user.email,
       role: user.role as UserRole,
-      name: user.name || undefined,
+      name: user.name,
+      avatar: null,
+      emailVerified: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
     // Store refresh token in database

@@ -49,7 +49,7 @@ async function main() {
    // Sellers
    const seller1 = await prisma.user.create({
      data: {
-       email: 'seller1@example.com',
+       email: 'seller1@aimarket.com',
        password: hashedPassword,
        name: '김개발',
        role: 'seller',
@@ -59,7 +59,7 @@ async function main() {
 
    const seller2 = await prisma.user.create({
      data: {
-       email: 'seller2@example.com',
+       email: 'seller2@aimarket.com',
        password: hashedPassword,
        name: '이자동',
        role: 'seller',
@@ -69,7 +69,7 @@ async function main() {
 
    const seller3 = await prisma.user.create({
      data: {
-       email: 'seller3@example.com',
+       email: 'seller3@aimarket.com',
        password: hashedPassword,
        name: '박바이브',
        role: 'seller',
@@ -79,7 +79,7 @@ async function main() {
 
    const seller4 = await prisma.user.create({
      data: {
-       email: 'seller4@example.com',
+       email: 'seller4@aimarket.com',
        password: hashedPassword,
        name: '최신규',
        role: 'seller',
@@ -90,7 +90,7 @@ async function main() {
    // Buyers
    const buyer1 = await prisma.user.create({
      data: {
-       email: 'buyer1@example.com',
+       email: 'buyer1@aimarket.com',
        password: hashedPassword,
        name: '정구매',
        role: 'user',
@@ -100,7 +100,7 @@ async function main() {
 
    const buyer2 = await prisma.user.create({
      data: {
-       email: 'buyer2@example.com',
+       email: 'buyer2@aimarket.com',
        password: hashedPassword,
        name: '홍마케팅',
        role: 'user',
@@ -111,7 +111,7 @@ async function main() {
    // Verifiers
    const verifier1 = await prisma.user.create({
      data: {
-       email: 'verifier1@example.com',
+       email: 'verifier1@aimarket.com',
        password: hashedPassword,
        name: '안검증',
        role: 'verifier',
@@ -121,7 +121,7 @@ async function main() {
 
    const verifier2 = await prisma.user.create({
      data: {
-       email: 'verifier2@example.com',
+       email: 'verifier2@aimarket.com',
        password: hashedPassword,
        name: '강보안',
        role: 'verifier',

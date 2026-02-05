@@ -39,7 +39,7 @@ export async function GET(
     }
 
     // Verify authentication for private files
-    const user = verifyToken(request);
+    const user = await verifyToken(request);
     const userId = user?.userId || null;
 
     // Check access permissions

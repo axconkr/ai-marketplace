@@ -32,6 +32,16 @@ function getNotificationIcon(type: NotificationType): string {
     REVIEW_RECEIVED: '⭐',
     MESSAGE_RECEIVED: '💬',
     SYSTEM_ANNOUNCEMENT: '📢',
+    REQUEST_CREATED: '📝',
+    PROPOSAL_SUBMITTED: '📨',
+    PROPOSAL_SELECTED: '🎉',
+    PROPOSAL_REJECTED: '❌',
+    ESCROW_INITIATED: '🔐',
+    ESCROW_RELEASED: '💸',
+    SUBSCRIPTION_CREATED: '🔔',
+    SUBSCRIPTION_UPDATED: '🔄',
+    SUBSCRIPTION_CANCELLED: '🚫',
+    SUBSCRIPTION_PAYMENT_FAILED: '⚠️',
   };
   return icons[type] || '📬';
 }
@@ -57,6 +67,16 @@ function getNotificationColor(type: NotificationType): string {
     REVIEW_RECEIVED: '#f59e0b',
     MESSAGE_RECEIVED: '#3b82f6',
     SYSTEM_ANNOUNCEMENT: '#6366f1',
+    REQUEST_CREATED: '#3b82f6',
+    PROPOSAL_SUBMITTED: '#3b82f6',
+    PROPOSAL_SELECTED: '#10b981',
+    PROPOSAL_REJECTED: '#ef4444',
+    ESCROW_INITIATED: '#8b5cf6',
+    ESCROW_RELEASED: '#10b981',
+    SUBSCRIPTION_CREATED: '#3b82f6',
+    SUBSCRIPTION_UPDATED: '#3b82f6',
+    SUBSCRIPTION_CANCELLED: '#ef4444',
+    SUBSCRIPTION_PAYMENT_FAILED: '#ef4444',
   };
   return colors[type] || '#6b7280';
 }

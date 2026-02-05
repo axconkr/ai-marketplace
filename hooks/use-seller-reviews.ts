@@ -81,7 +81,7 @@ export function useReplyMutation() {
       toast({
         title: '답변 등록 실패',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -118,7 +118,7 @@ export function useEditReplyMutation() {
       toast({
         title: '답변 수정 실패',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
@@ -154,7 +154,7 @@ export function useDeleteReplyMutation() {
       toast({
         title: '답변 삭제 실패',
         description: error.message,
-        variant: 'destructive',
+        variant: 'error',
       });
     },
   });
