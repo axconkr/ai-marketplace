@@ -23,8 +23,8 @@ import { ImageUpload } from './image-upload';
 import { MultiImageUpload } from './multi-image-upload';
 import { MarkdownEditor } from './markdown-preview';
 import { ProductPreview, ProductPreviewCard } from './product-preview';
-import { useToast } from '@/components/ui/toast';
-import { useCreateProduct, useUpdateProduct } from '@/hooks/use-products';
+import { useToast } from '@/hooks/use-toast';
+import { useCreateProduct, useUpdateProduct, useUploadFile } from '@/hooks/use-products';
 import {
   ProductCreateSchema,
   CATEGORY_LABELS,
@@ -46,7 +46,7 @@ interface ProductFormProps {
 
 export function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter();
-  const { success, error } = useToast();
+  const { addToast } = useToast();
 
   // Form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -61,6 +61,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
 
   const createMutation = useCreateProduct();
   const updateMutation = useUpdateProduct(product?.id || '');
+  const uploadMutation = useUploadFile();
 
   const {
     register,
@@ -72,20 +73,21 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     resolver: zodResolver(ProductCreateSchema),
     defaultValues: product
       ? {
-          title: product.title,
-          description: product.description,
-          category: product.category as any,
-          tags: product.tags,
-          pricing_model: product.pricing_model as any,
-          price: Number(product.price),
-          currency: product.currency as any,
-          file_url: product.file_url,
-          demo_url: product.demo_url,
-        }
+        name: product.name,
+        description: product.description,
+        category: product.category as any,
+        tags: product.tags,
+        pricing_model: product.pricing_model as any,
+        price: Number(product.price),
+        currency: product.currency as any,
+        file_url: product.file_url,
+        demo_url: product.demo_url,
+        thumbnail_url: product.thumbnail_url,
+      }
       : {
-          currency: 'KRW' as any,
-          tags: [],
-        },
+        currency: 'KRW' as any,
+        tags: [],
+      },
   });
 
   const watchedValues = watch();
@@ -93,11 +95,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
   const onSubmit = async (data: ProductCreateInput) => {
     try {
       // Upload file if provided
-      if (uploadedFile) {
-        setUploadProgress(0);
-        const { url } = await uploadMutation.mutateAsync(uploadedFile);
+      if (mainFile) {
+        setUploadProgress(prev => ({ ...prev, main: 0 }));
+        const { url } = await uploadMutation.mutateAsync(mainFile);
         data.file_url = url;
-        setUploadProgress(100);
+        setUploadProgress(prev => ({ ...prev, main: 100 }));
       }
 
       if (mode === 'create') {
@@ -105,6 +107,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         addToast({
           title: '상품이 성공적으로 등록되었습니다!',
           description: '상품이 등록되었으며 검토 대기 중입니다.',
+          variant: 'success',
         });
         router.push(`/products/${newProduct.id}`);
       } else {
@@ -112,6 +115,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         addToast({
           title: '상품이 성공적으로 수정되었습니다!',
           description: '변경 사항이 저장되었습니다.',
+          variant: 'success',
         });
         router.push(`/products/${product?.id}`);
       }
@@ -145,11 +149,10 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           <div key={step.number} className="flex items-center flex-1">
             <div className="flex flex-col items-center flex-1">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${
-                  currentStep >= step.number
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground'
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${currentStep >= step.number
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+                  }`}
               >
                 {step.number}
               </div>
@@ -160,9 +163,8 @@ export function ProductForm({ product, mode }: ProductFormProps) {
             </div>
             {index < steps.length - 1 && (
               <div
-                className={`flex-1 h-0.5 mx-4 transition-colors ${
-                  currentStep > step.number ? 'bg-primary' : 'bg-muted'
-                }`}
+                className={`flex-1 h-0.5 mx-4 transition-colors ${currentStep > step.number ? 'bg-primary' : 'bg-muted'
+                  }`}
               />
             )}
           </div>
@@ -179,17 +181,17 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           <CardContent className="space-y-4">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">
+              <Label htmlFor="name">
                 상품명 <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="title"
-                {...register('title')}
+                id="name"
+                {...register('name')}
                 placeholder="놀라운 n8n 워크플로우 템플릿"
-                aria-invalid={!!errors.title}
+                aria-invalid={!!errors.name}
               />
-              {errors.title && (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
               )}
             </div>
 
@@ -350,10 +352,10 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           </CardHeader>
           <CardContent>
             <FileUpload
-              onFileSelect={setUploadedFile}
-              onFileRemove={() => setUploadedFile(null)}
-              currentFile={uploadedFile}
-              uploadProgress={uploadProgress}
+              onFileSelect={setMainFile}
+              onFileRemove={() => setMainFile(null)}
+              currentFile={mainFile}
+              uploadProgress={uploadProgress['main'] || 0}
               error={uploadMutation.error?.message}
             />
           </CardContent>
@@ -369,7 +371,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="border rounded-lg p-4 space-y-3">
-              <h3 className="font-semibold text-lg">{watchedValues.title || '제목 없음'}</h3>
+              <h3 className="font-semibold text-lg">{watchedValues.name || '제목 없음'}</h3>
               <p className="text-sm text-muted-foreground">
                 {watchedValues.description || '설명 없음'}
               </p>

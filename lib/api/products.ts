@@ -41,10 +41,16 @@ export interface Product {
   id: string;
   seller_id: string;
   name: string;
-  description: string | null;
-  category: string | null;
+  description: string;
+  category: string;
+  tags: string[];
   price: number;
+  pricing_model: string;
   currency: string;
+  file_url: string | null;
+  demo_url: string | null;
+  thumbnail_url: string | null;
+  image_urls: string[];
   verification_level: number;
   verification_badges: string[];
   verification_score: number | null;
