@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { verifyToken } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
-/**
- * POST /api/user/stripe-connect - Create Stripe Connect account link
- */
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userId: string;
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
@@ -70,15 +76,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
-/**
- * GET /api/user/stripe-connect - Get Stripe Connect account status
- */
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userId: string;
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({

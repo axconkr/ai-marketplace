@@ -86,13 +86,18 @@ const sellerItems = [
     icon: ShoppingCart,
   },
   {
-    href: '/dashboard/analytics',
-    label: '판매 분석',
+    href: '/dashboard/settlements',
+    label: '정산 관리',
+    icon: DollarSign,
+  },
+  {
+    href: '/dashboard/verifications',
+    label: '검증 요청',
     icon: TrendingUp,
   },
   {
-    href: '/profile',
-    label: '설정',
+    href: '/dashboard/settings/bank-account',
+    label: '계좌 설정',
     icon: Settings,
   },
 ];
@@ -108,6 +113,11 @@ const buyerItems = [
     href: '/products',
     label: '제품 둘러보기',
     icon: Package,
+  },
+  {
+    href: '/orders',
+    label: '주문 내역',
+    icon: FileText,
   },
   {
     href: '/cart',
