@@ -5,16 +5,26 @@ import {
   markSettlementAsFailed,
   processStripeConnectPayout,
 } from '@/lib/services/settlement';
+import { verifyToken } from '@/lib/auth';
 
-/**
- * POST /api/settlements/process/[id] - Process settlement payout (admin only)
- */
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const userRole = request.headers.get('x-user-role');
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userRole: string;
+    try {
+      const payload = await verifyToken(token);
+      userRole = payload.role;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
 
     if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

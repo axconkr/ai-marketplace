@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSettlementSummary } from '@/lib/services/settlement';
+import { verifyToken } from '@/lib/auth';
 
-/**
- * GET /api/settlements/summary - Get settlement summary statistics
- */
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Admins see all, sellers see only their own
-    const sellerId = userRole === 'admin' ? undefined : userId;
+    let userId: string;
+    let userRole: string;
+    
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+      userRole = payload.role;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
 
+    const sellerId = userRole === 'admin' ? undefined : userId;
     const summary = await getSettlementSummary(sellerId);
 
     return NextResponse.json(summary);

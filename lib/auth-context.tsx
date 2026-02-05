@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Load user from localStorage on mount
   useEffect(() => {
     const loadUser = () => {
       const storedUser = localStorage.getItem('userInfo');
@@ -43,7 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           console.error('Failed to parse user info:', error);
           localStorage.removeItem('userInfo');
+          setUser(null);
         }
+      } else {
+        setUser(null);
       }
       setIsLoading(false);
     };
@@ -132,28 +134,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [router]);
 
-  /**
-   * Logout user
-   */
   const logout = useCallback(async () => {
     try {
-      // Call logout endpoint
       await apiFetch('/auth/logout', {
         method: 'POST',
       });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear local storage regardless of API response
       localStorage.removeItem('userInfo');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
 
-      // Update state
       setUser(null);
 
-      // Dispatch custom event for other components
       window.dispatchEvent(new Event('authStateChanged'));
+      window.dispatchEvent(new Event('storage'));
 
-      // Redirect to login
       router.push('/login');
     }
   }, [router]);

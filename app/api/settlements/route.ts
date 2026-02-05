@@ -1,22 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, SettlementStatus } from '@prisma/client';
 import { listAllSettlements, listSettlementsForSeller } from '@/lib/services/settlement';
+import { verifyToken } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
-/**
- * GET /api/settlements - List settlements
- * For sellers: returns their settlements
- * For admins: returns all settlements with filters
- */
 export async function GET(request: NextRequest) {
   try {
-    // TODO: Get user from session/JWT
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userId: string;
+    let userRole: string;
+    
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+      userRole = payload.role;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -72,12 +77,21 @@ export async function GET(request: NextRequest) {
   }
 }
 
-/**
- * POST /api/settlements - Create settlement manually (admin only)
- */
 export async function POST(request: NextRequest) {
   try {
-    const userRole = request.headers.get('x-user-role');
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userRole: string;
+    try {
+      const payload = await verifyToken(token);
+      userRole = payload.role;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
 
     if (userRole !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

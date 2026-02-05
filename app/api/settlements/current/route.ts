@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentMonthEstimate } from '@/lib/services/settlement';
+import { verifyToken } from '@/lib/auth';
 
-/**
- * GET /api/settlements/current - Get current month estimated settlement
- * Sellers can see their estimated earnings for the current month
- */
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get('x-user-id');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userId: string;
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const estimate = await getCurrentMonthEstimate(userId);

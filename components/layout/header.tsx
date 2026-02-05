@@ -54,29 +54,31 @@ export function Header() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-3 md:flex">
-          {/* Wishlist */}
-          <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/wishlist">
-              <Heart className="h-5 w-5" />
-              {isAuthenticated && wishlist.length > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                >
-                  {wishlist.length > 99 ? '99+' : wishlist.length}
-                </Badge>
-              )}
-              <span className="sr-only">위시리스트</span>
-            </Link>
-          </Button>
+          {user?.role !== UserRole.ADMIN && (
+            <>
+              <Button variant="ghost" size="icon" className="relative" asChild>
+                <Link href="/wishlist">
+                  <Heart className="h-5 w-5" />
+                  {isAuthenticated && wishlist.length > 0 && (
+                    <Badge
+                      variant="destructive"
+                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                    >
+                      {wishlist.length > 99 ? '99+' : wishlist.length}
+                    </Badge>
+                  )}
+                  <span className="sr-only">위시리스트</span>
+                </Link>
+              </Button>
 
-          {/* Shopping Cart */}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/cart">
-              <ShoppingCart className="h-5 w-5" />
-              <span className="sr-only">장바구니</span>
-            </Link>
-          </Button>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="/cart">
+                  <ShoppingCart className="h-5 w-5" />
+                  <span className="sr-only">장바구니</span>
+                </Link>
+              </Button>
+            </>
+          )}
 
           {/* Notifications - Only show when authenticated */}
           {isAuthenticated && <NotificationBell />}
@@ -147,26 +149,27 @@ export function Header() {
               </Link>
             ))}
 
-            {/* Mobile Wishlist, Cart & Notifications Links */}
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" asChild className="flex-1">
-                <Link href="/wishlist" className="flex items-center justify-center gap-2">
-                  <Heart className="h-4 w-4" />
-                  위시리스트
-                  {isAuthenticated && wishlist.length > 0 && (
-                    <Badge variant="destructive" className="ml-1">
-                      {wishlist.length}
-                    </Badge>
-                  )}
-                </Link>
-              </Button>
-              <Button variant="outline" asChild className="flex-1">
-                <Link href="/cart" className="flex items-center justify-center gap-2">
-                  <ShoppingCart className="h-4 w-4" />
-                  장바구니
-                </Link>
-              </Button>
-            </div>
+            {user?.role !== UserRole.ADMIN && (
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" asChild className="flex-1">
+                  <Link href="/wishlist" className="flex items-center justify-center gap-2">
+                    <Heart className="h-4 w-4" />
+                    위시리스트
+                    {isAuthenticated && wishlist.length > 0 && (
+                      <Badge variant="destructive" className="ml-1">
+                        {wishlist.length}
+                      </Badge>
+                    )}
+                  </Link>
+                </Button>
+                <Button variant="outline" asChild className="flex-1">
+                  <Link href="/cart" className="flex items-center justify-center gap-2">
+                    <ShoppingCart className="h-4 w-4" />
+                    장바구니
+                  </Link>
+                </Button>
+              </div>
+            )}
 
             {/* Mobile Notifications Link */}
             {isAuthenticated && (

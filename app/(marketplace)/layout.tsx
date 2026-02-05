@@ -94,7 +94,7 @@ export default function MarketplaceLayout({
               </div>
 
               <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-                <p>© 2024 AI Marketplace. All rights reserved.</p>
+                <p>© 2026 AI Marketplace. All rights reserved.</p>
               </div>
             </div>
           </footer>

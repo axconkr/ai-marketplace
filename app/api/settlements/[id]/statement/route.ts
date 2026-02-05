@@ -2,23 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSettlementDetails } from '@/lib/services/settlement';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { verifyToken } from '@/lib/auth';
 
-/**
- * GET /api/settlements/[id]/statement - Download settlement statement as PDF
- *
- * Note: This is a basic implementation that returns a text-based statement.
- * For production, you should use a PDF library like @react-pdf/renderer or puppeteer
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = request.headers.get('x-user-id');
-    const userRole = request.headers.get('x-user-role');
-
-    if (!userId) {
+    const token = request.cookies.get('accessToken')?.value;
+    
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    let userId: string;
+    let userRole: string;
+    
+    try {
+      const payload = await verifyToken(token);
+      userId = payload.userId;
+      userRole = payload.role;
+    } catch {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const settlement = await getSettlementDetails(params.id);
