@@ -63,9 +63,9 @@ export default function VerifierDashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Verifier Dashboard</h1>
+        <h1 className="text-3xl font-bold">검증 대시보드</h1>
         <p className="text-gray-600 mt-2">
-          Review products and earn rewards
+          제품을 검증하고 보상을 받으세요
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export default function VerifierDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total Reviews
+              전체 검증
             </CardTitle>
             <Package className="h-4 w-4 text-gray-400" />
           </CardHeader>
@@ -92,7 +92,7 @@ export default function VerifierDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total Earnings
+              총 수익
             </CardTitle>
             <DollarSign className="h-4 w-4 text-gray-400" />
           </CardHeader>
@@ -101,7 +101,7 @@ export default function VerifierDashboardPage() {
               <Skeleton className="h-8 w-24" />
             ) : (
               <div className="text-2xl font-bold text-green-600">
-                ${((stats?.totalEarnings || 0) / 100).toFixed(2)}
+                ₩{(stats?.totalEarnings || 0).toLocaleString()}
               </div>
             )}
           </CardContent>
@@ -110,7 +110,7 @@ export default function VerifierDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Approval Rate
+              승인율
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-gray-400" />
           </CardHeader>
@@ -128,7 +128,7 @@ export default function VerifierDashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Avg Score
+              평균 점수
             </CardTitle>
             <Award className="h-4 w-4 text-gray-400" />
           </CardHeader>
@@ -148,13 +148,13 @@ export default function VerifierDashboardPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="available">
-            Available ({availableData?.total || 0})
+            대기중 ({availableData?.total || 0})
           </TabsTrigger>
           <TabsTrigger value="in-progress">
-            In Progress ({inProgress.length})
+            진행중 ({inProgress.length})
           </TabsTrigger>
           <TabsTrigger value="completed">
-            Completed ({completed.length})
+            완료 ({completed.length})
           </TabsTrigger>
         </TabsList>
 
@@ -177,7 +177,7 @@ export default function VerifierDashboardPage() {
             <Card>
               <CardContent className="py-6">
                 <p className="text-center text-red-600">
-                  Failed to load available verifications
+                  대기중인 검증을 불러오는데 실패했습니다
                 </p>
               </CardContent>
             </Card>
@@ -188,10 +188,10 @@ export default function VerifierDashboardPage() {
                 <div className="text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No available verifications
+                    대기중인 검증이 없습니다
                   </h3>
                   <p className="text-gray-600">
-                    Check back later for new verification requests
+                    나중에 새로운 검증 요청을 확인해 주세요
                   </p>
                 </div>
               </CardContent>
@@ -232,10 +232,10 @@ export default function VerifierDashboardPage() {
                 <div className="text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No verifications in progress
+                    진행중인 검증이 없습니다
                   </h3>
                   <p className="text-gray-600">
-                    Claim a verification from the Available tab to get started
+                    대기중 탭에서 검증을 신청하세요
                   </p>
                 </div>
               </CardContent>
@@ -274,10 +274,10 @@ export default function VerifierDashboardPage() {
                 <div className="text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No completed verifications
+                    완료된 검증이 없습니다
                   </h3>
                   <p className="text-gray-600">
-                    Completed verifications will appear here
+                    완료된 검증이 여기에 표시됩니다
                   </p>
                 </div>
               </CardContent>

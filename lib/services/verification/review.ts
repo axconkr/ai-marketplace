@@ -46,7 +46,7 @@ export async function startVerificationReview(
 }
 
 /**
- * Submit manual review and complete verification
+ * Submit manual review and set status to COMPLETED
  */
 export async function submitVerificationReview(params: SubmitReviewParams) {
   const { verificationId, verifierId, review } = params;
@@ -80,13 +80,12 @@ export async function submitVerificationReview(params: SubmitReviewParams) {
   // 3. Determine badges based on review and scores
   const badges = determineBadges(review, finalScore);
 
-  // 4. Update verification using transaction
+  // 4. Update verification
   const result = await prisma.$transaction(async (tx) => {
-    // Update verification
     const updatedVerification = await tx.verification.update({
       where: { id: verificationId },
       data: {
-        status: review.approved ? 'APPROVED' : 'REJECTED',
+        status: 'COMPLETED',
         report: {
           ...report,
           manual: {
@@ -103,30 +102,7 @@ export async function submitVerificationReview(params: SubmitReviewParams) {
       },
     });
 
-    // Update product
-    await tx.product.update({
-      where: { id: verification.product_id },
-      data: {
-        verification_level: review.approved ? verification.level : 0,
-        verification_score: finalScore,
-        verification_badges: review.approved ? badges : [],
-      },
-    });
-
-    // Create verifier payout if approved
-    if (review.approved && verification.verifier_share > 0) {
-      await tx.verifierPayout.create({
-        data: {
-          verifier_id: verifierId,
-          verification_id: verificationId,
-          amount: verification.verifier_share,
-          status: 'PENDING',
-        },
-      });
-
-      // Update verifier stats
       await updateVerifierStats(tx, verifierId, review.approved, finalScore);
-    }
 
     return updatedVerification;
   });

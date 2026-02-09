@@ -65,7 +65,7 @@ export function ReviewForm({ verificationId, onSuccess }: ReviewFormProps) {
     e.preventDefault();
 
     if (approved === null) {
-      alert('승인 또는 거부를 선택해주세요');
+      alert('승인 권고 또는 거부 권고를 선택해주세요');
       return;
     }
 
@@ -118,7 +118,7 @@ export function ReviewForm({ verificationId, onSuccess }: ReviewFormProps) {
       {/* Approval Decision */}
       <Card>
         <CardHeader>
-          <CardTitle>결정</CardTitle>
+          <CardTitle>검증 의견</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-4">
@@ -128,7 +128,7 @@ export function ReviewForm({ verificationId, onSuccess }: ReviewFormProps) {
               onClick={() => setApproved(true)}
               className="flex-1"
             >
-              승인
+              승인 권고
             </Button>
             <Button
               type="button"
@@ -136,7 +136,7 @@ export function ReviewForm({ verificationId, onSuccess }: ReviewFormProps) {
               onClick={() => setApproved(false)}
               className="flex-1"
             >
-              거부
+              거부 권고
             </Button>
           </div>
         </CardContent>

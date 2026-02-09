@@ -323,6 +323,129 @@ export async function listAvailableExperts(expertType: ExpertType): Promise<
   });
 }
 
+export async function approveVerification(
+  verificationId: string,
+  adminComment?: string
+): Promise<AdminActionResult> {
+  try {
+    const verification = await prisma.verification.findUnique({
+      where: { id: verificationId },
+      include: { product: true },
+    });
+
+    if (!verification) {
+      return { success: false, message: 'Verification not found' };
+    }
+
+    if (verification.status !== VerificationStatus.COMPLETED) {
+      return { success: false, message: 'Verification must be in COMPLETED status for approval' };
+    }
+
+    const report = verification.report as any;
+    const finalScore = report?.finalScore ?? verification.score ?? 0;
+    const badges = verification.badges || [];
+
+    await prisma.$transaction(async (tx) => {
+      await tx.verification.update({
+        where: { id: verificationId },
+        data: {
+          status: VerificationStatus.APPROVED,
+          report: {
+            ...report,
+            adminDecision: {
+              action: 'APPROVED',
+              comment: adminComment || null,
+              decidedAt: new Date().toISOString(),
+            },
+          } as any,
+        },
+      });
+
+      await tx.product.update({
+        where: { id: verification.product_id },
+        data: {
+          verification_level: verification.level,
+          verification_score: finalScore,
+          verification_badges: badges,
+        },
+      });
+
+      if (verification.verifier_id && verification.verifier_share > 0) {
+        await tx.verifierPayout.create({
+          data: {
+            verifier_id: verification.verifier_id,
+            verification_id: verificationId,
+            amount: verification.verifier_share,
+            status: 'PENDING',
+          },
+        });
+      }
+    });
+
+    return { success: true, message: '검증이 승인되었습니다.' };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to approve verification',
+    };
+  }
+}
+
+export async function rejectVerification(
+  verificationId: string,
+  reason: string
+): Promise<AdminActionResult> {
+  try {
+    const verification = await prisma.verification.findUnique({
+      where: { id: verificationId },
+      include: { product: true },
+    });
+
+    if (!verification) {
+      return { success: false, message: 'Verification not found' };
+    }
+
+    if (verification.status !== VerificationStatus.COMPLETED) {
+      return { success: false, message: 'Verification must be in COMPLETED status for rejection' };
+    }
+
+    const report = verification.report as any;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.verification.update({
+        where: { id: verificationId },
+        data: {
+          status: VerificationStatus.REJECTED,
+          report: {
+            ...report,
+            adminDecision: {
+              action: 'REJECTED',
+              reason,
+              decidedAt: new Date().toISOString(),
+            },
+          } as any,
+        },
+      });
+
+      await tx.product.update({
+        where: { id: verification.product_id },
+        data: {
+          verification_level: 0,
+          verification_score: 0,
+          verification_badges: [],
+        },
+      });
+    });
+
+    return { success: true, message: '검증이 거부되었습니다.' };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to reject verification',
+    };
+  }
+}
+
 export async function getVerificationStatistics(): Promise<{
   total: number;
   byStatus: Record<string, number>;

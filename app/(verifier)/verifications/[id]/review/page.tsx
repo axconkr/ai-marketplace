@@ -46,15 +46,15 @@ export default function VerificationReviewPage({ params }: PageProps) {
         <Link href="/verifications">
           <Button variant="ghost">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Verifications
+            검증 목록으로
           </Button>
         </Link>
         <Card>
           <CardContent className="py-6">
             <p className="text-center text-red-600">
               {error
-                ? `Failed to load verification: ${(error as Error).message}`
-                : 'Verification not found'}
+                ? `검증 정보를 불러오는데 실패했습니다: ${(error as Error).message}`
+                : '검증 정보를 찾을 수 없습니다'}
             </p>
           </CardContent>
         </Card>
@@ -70,16 +70,16 @@ export default function VerificationReviewPage({ params }: PageProps) {
         <Link href="/verifications">
           <Button variant="ghost">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Verifications
+            검증 목록으로
           </Button>
         </Link>
         <VerificationBadge level={verification.level} />
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold">Review Product</h1>
+        <h1 className="text-3xl font-bold">제품 검증</h1>
         <p className="text-gray-600 mt-2">
-          Provide detailed feedback for {verification.product.name}
+          {verification.product.name} 제품을 검증해 주세요
         </p>
       </div>
 
@@ -88,29 +88,29 @@ export default function VerificationReviewPage({ params }: PageProps) {
         <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle>Product Details</CardTitle>
+              <CardTitle>제품 정보</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <div className="text-sm text-gray-600">Product Name</div>
+                <div className="text-sm text-gray-600">제품명</div>
                 <div className="font-medium">{verification.product.name}</div>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600">Verification Level</div>
+                <div className="text-sm text-gray-600">검증 레벨</div>
                 <div className="font-medium">{levelInfo.name}</div>
               </div>
 
               <div>
-                <div className="text-sm text-gray-600">Your Earnings</div>
+                <div className="text-sm text-gray-600">검증 수익</div>
                 <div className="font-medium text-green-600">
-                  ${(verification.verifier_share / 100).toFixed(2)}
+                  ₩{verification.verifier_share.toLocaleString()}
                 </div>
               </div>
 
               <div>
                 <div className="text-sm text-gray-600 mb-2">
-                  Requirements
+                  검증 항목
                 </div>
                 <ul className="space-y-1 text-sm">
                   {levelInfo.features.map((feature, i) => (
@@ -125,11 +125,11 @@ export default function VerificationReviewPage({ params }: PageProps) {
               {verification.report?.checks && (
                 <div>
                   <div className="text-sm text-gray-600 mb-2">
-                    Automated Checks
+                    자동 검사 결과
                   </div>
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
-                      <span>File Format:</span>
+                      <span>파일 형식:</span>
                       <span
                         className={
                           verification.report.checks.fileFormat.passed
@@ -138,12 +138,12 @@ export default function VerificationReviewPage({ params }: PageProps) {
                         }
                       >
                         {verification.report.checks.fileFormat.passed
-                          ? 'Passed'
-                          : 'Failed'}
+                          ? '통과'
+                          : '실패'}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Virus Scan:</span>
+                      <span>바이러스 검사:</span>
                       <span
                         className={
                           verification.report.checks.virusScan.passed
@@ -152,12 +152,12 @@ export default function VerificationReviewPage({ params }: PageProps) {
                         }
                       >
                         {verification.report.checks.virusScan.passed
-                          ? 'Passed'
-                          : 'Failed'}
+                          ? '통과'
+                          : '실패'}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Metadata:</span>
+                      <span>메타데이터:</span>
                       <span
                         className={
                           verification.report.checks.metadata.passed
@@ -166,8 +166,8 @@ export default function VerificationReviewPage({ params }: PageProps) {
                         }
                       >
                         {verification.report.checks.metadata.passed
-                          ? 'Passed'
-                          : 'Failed'}
+                          ? '통과'
+                          : '실패'}
                       </span>
                     </div>
                   </div>

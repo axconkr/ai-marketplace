@@ -10,22 +10,22 @@ interface VerificationBadgeProps {
 
 const BADGE_CONFIG = {
   0: {
-    text: 'Verified',
+    text: '검증됨',
     color: 'bg-gray-500',
     icon: Check,
   },
   1: {
-    text: 'Reviewed',
+    text: '리뷰됨',
     color: 'bg-blue-500',
     icon: Star,
   },
   2: {
-    text: 'Expert',
+    text: '전문가',
     color: 'bg-purple-500',
     icon: Shield,
   },
   3: {
-    text: 'Premium',
+    text: '프리미엄',
     color: 'bg-yellow-600',
     icon: Crown,
   },
@@ -66,10 +66,10 @@ export function VerificationBadgeList({
   if (!badges || badges.length === 0) return null;
 
   const badgeConfig: Record<string, { color: string; label: string }> = {
-    security: { color: 'bg-red-500', label: 'Security' },
-    performance: { color: 'bg-green-500', label: 'Performance' },
-    quality: { color: 'bg-blue-500', label: 'Quality' },
-    documentation: { color: 'bg-purple-500', label: 'Documentation' },
+    security: { color: 'bg-red-500', label: '보안' },
+    performance: { color: 'bg-green-500', label: '성능' },
+    quality: { color: 'bg-blue-500', label: '품질' },
+    documentation: { color: 'bg-purple-500', label: '문서화' },
   };
 
   return (

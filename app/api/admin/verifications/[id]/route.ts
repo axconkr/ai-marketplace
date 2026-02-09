@@ -5,6 +5,8 @@ import { handleError, successResponse } from '@/lib/api/response';
 import {
   getVerificationDetailsForAdmin,
   assignVerifier,
+  approveVerification,
+  rejectVerification,
 } from '@/lib/services/admin/verification';
 
 /**
@@ -63,6 +65,48 @@ export async function POST(
     }
 
     return successResponse(result.data);
+  } catch (error) {
+    return handleError(error);
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await requireRole(request, [UserRole.ADMIN]);
+    const body = await request.json();
+    const { action, comment, reason } = body;
+
+    if (!action || !['approve', 'reject'].includes(action)) {
+      return NextResponse.json(
+        { error: 'action must be "approve" or "reject"' },
+        { status: 400 }
+      );
+    }
+
+    let result;
+    if (action === 'approve') {
+      result = await approveVerification(params.id, comment);
+    } else {
+      if (!reason) {
+        return NextResponse.json(
+          { error: 'reason is required for rejection' },
+          { status: 400 }
+        );
+      }
+      result = await rejectVerification(params.id, reason);
+    }
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.message },
+        { status: 400 }
+      );
+    }
+
+    return successResponse({ message: result.message });
   } catch (error) {
     return handleError(error);
   }

@@ -17,6 +17,14 @@ interface Verification {
 }
 
 interface VerificationDetails extends Verification {
+  fee: number;
+  platform_share: number;
+  verifier_share: number;
+  report: any;
+  score: number | null;
+  badges: string[];
+  reviewed_at: string | null;
+  completed_at: string | null;
   expertReviews?: Array<{
     id: string;
     expert_type: string;
@@ -49,6 +57,8 @@ export default function AdminVerificationsPage() {
   const [selectedVerification, setSelectedVerification] = useState<VerificationDetails | null>(null);
   const [verifiers, setVerifiers] = useState<User[]>([]);
   const [experts, setExperts] = useState<User[]>([]);
+  const [adminComment, setAdminComment] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     fetchVerifications();
@@ -147,6 +157,41 @@ export default function AdminVerificationsPage() {
       }
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  const handleAdminAction = async (verificationId: string, action: 'approve' | 'reject') => {
+    if (action === 'reject' && !adminComment.trim()) {
+      alert('거부 사유를 입력해주세요.');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      const body: any = { action };
+      if (action === 'approve') {
+        body.comment = adminComment || undefined;
+      } else {
+        body.reason = adminComment;
+      }
+      const response = await fetch(`/api/admin/verifications/${verificationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (response.ok) {
+        alert(action === 'approve' ? '검증이 승인되었습니다.' : '검증이 거부되었습니다.');
+        setSelectedVerification(null);
+        setAdminComment('');
+        fetchVerifications();
+      } else {
+        const data = await response.json();
+        alert(data.error || '처리에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('처리 중 오류가 발생했습니다.');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -273,7 +318,7 @@ export default function AdminVerificationsPage() {
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h2 className="text-xl font-bold">검증 상세 정보</h2>
-                <button onClick={() => setSelectedVerification(null)}><X className="w-6 h-6" /></button>
+                <button onClick={() => { setSelectedVerification(null); setAdminComment(''); }}><X className="w-6 h-6" /></button>
               </div>
               <div className="space-y-4">
                 <div><span className="font-medium">상품:</span> {selectedVerification.product?.name}</div>
@@ -281,6 +326,108 @@ export default function AdminVerificationsPage() {
                 <div className="flex gap-2"><span className="font-medium">상태:</span> {getStatusBadge(selectedVerification.status)}</div>
                 <div><span className="font-medium">레벨:</span> Level {selectedVerification.level}</div>
                 <div><span className="font-medium">검증자:</span> {selectedVerification.verifier?.name || '미배정'}</div>
+
+                {['COMPLETED', 'APPROVED', 'REJECTED'].includes(selectedVerification.status) && selectedVerification.report?.manual && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-medium mb-3">검증자 리뷰 결과</h3>
+                    <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center gap-4">
+                        <div>
+                          <span className="font-medium">검증자 점수:</span>{' '}
+                          <span className="text-lg font-bold text-blue-600">
+                            {selectedVerification.score ?? selectedVerification.report.manual.score ?? '-'}
+                          </span>
+                          <span className="text-gray-500 text-sm"> / 100</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">검증자 의견:</span>{' '}
+                          {selectedVerification.report.manual.approved ? (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">승인 권고</span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">거부 권고</span>
+                          )}
+                        </div>
+                      </div>
+                      {selectedVerification.report.manual.comments && (
+                        <div>
+                          <span className="font-medium">코멘트:</span>
+                          <p className="mt-1 text-gray-700 bg-white p-2 rounded border">{selectedVerification.report.manual.comments}</p>
+                        </div>
+                      )}
+                      {selectedVerification.badges && selectedVerification.badges.length > 0 && (
+                        <div>
+                          <span className="font-medium">뱃지:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {selectedVerification.badges.map((badge: string, idx: number) => (
+                              <span key={idx} className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">{badge}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {selectedVerification.report.manual.strengths && selectedVerification.report.manual.strengths.length > 0 && (
+                        <div>
+                          <span className="font-medium">강점:</span>
+                          <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                            {selectedVerification.report.manual.strengths.map((s: string, idx: number) => (
+                              <li key={idx}>{s}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {selectedVerification.report.manual.weaknesses && selectedVerification.report.manual.weaknesses.length > 0 && (
+                        <div>
+                          <span className="font-medium">약점:</span>
+                          <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                            {selectedVerification.report.manual.weaknesses.map((w: string, idx: number) => (
+                              <li key={idx}>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {selectedVerification.report.manual.improvements && selectedVerification.report.manual.improvements.length > 0 && (
+                        <div>
+                          <span className="font-medium">개선 제안:</span>
+                          <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
+                            {selectedVerification.report.manual.improvements.map((i: string, idx: number) => (
+                              <li key={idx}>{i}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {selectedVerification.status === 'COMPLETED' && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-medium mb-3">관리자 최종 결정</h3>
+                    <div className="space-y-3">
+                      <textarea
+                        value={adminComment}
+                        onChange={(e) => setAdminComment(e.target.value)}
+                        placeholder="코멘트 또는 거부 사유를 입력하세요"
+                        className="w-full border rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        rows={3}
+                      />
+                      <div className="flex gap-3">
+                        <button
+                          onClick={() => handleAdminAction(selectedVerification.id, 'approve')}
+                          disabled={actionLoading}
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 font-medium"
+                        >
+                          {actionLoading ? '처리 중...' : '최종 승인'}
+                        </button>
+                        <button
+                          onClick={() => handleAdminAction(selectedVerification.id, 'reject')}
+                          disabled={actionLoading}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium"
+                        >
+                          {actionLoading ? '처리 중...' : '거부'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {selectedVerification.expertReviews && selectedVerification.expertReviews.length > 0 && (
                   <div className="border-t pt-4">

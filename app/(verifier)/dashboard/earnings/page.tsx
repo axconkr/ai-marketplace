@@ -117,9 +117,9 @@ export default function VerifierEarningsDashboard() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Verifier Earnings</h1>
+        <h1 className="text-3xl font-bold">검증 수익</h1>
         <p className="text-muted-foreground">
-          Track your verification earnings and settlement history
+          검증 수익 및 정산 내역을 확인하세요
         </p>
       </div>
 
@@ -127,7 +127,7 @@ export default function VerifierEarningsDashboard() {
       {currentEarnings && (
         <Card>
           <CardHeader>
-            <CardTitle>Current Month Earnings</CardTitle>
+            <CardTitle>이번 달 수익</CardTitle>
             <p className="text-sm text-muted-foreground">
               {new Date(currentEarnings.currentMonth.periodStart).toLocaleDateString()} -{' '}
               {new Date(currentEarnings.currentMonth.periodEnd).toLocaleDateString()}
@@ -136,16 +136,16 @@ export default function VerifierEarningsDashboard() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <StatCard
-                label="Verifications"
+                label="검증 건수"
                 value={currentEarnings.currentMonth.verificationCount.toString()}
               />
               <StatCard
-                label="Total Earnings"
+                label="총 수익"
                 value={formatCurrency(currentEarnings.currentMonth.totalEarnings)}
                 highlight
               />
               <StatCard
-                label="Avg per Verification"
+                label="건당 평균"
                 value={formatCurrency(currentEarnings.currentMonth.averagePerVerification)}
               />
             </div>
@@ -157,22 +157,22 @@ export default function VerifierEarningsDashboard() {
       {currentEarnings && currentEarnings.pending.count > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Pending Payouts</CardTitle>
+            <CardTitle>미정산 금액</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <StatCard
-                label="Pending Verifications"
+                label="미정산 건수"
                 value={currentEarnings.pending.count.toString()}
               />
               <StatCard
-                label="Pending Amount"
+                label="미정산 금액"
                 value={formatCurrency(currentEarnings.pending.totalAmount)}
                 highlight
               />
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              These earnings will be included in your next monthly settlement
+              다음 월 정산에 포함될 예정입니다
             </p>
           </CardContent>
         </Card>
@@ -182,16 +182,16 @@ export default function VerifierEarningsDashboard() {
       {breakdown.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Earnings by Level (Current Month)</CardTitle>
+            <CardTitle>레벨별 수익 (이번 달)</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Level</TableHead>
-                  <TableHead className="text-right">Verifications</TableHead>
-                  <TableHead className="text-right">Earnings</TableHead>
-                  <TableHead className="text-right">Avg per Verification</TableHead>
+                  <TableHead>레벨</TableHead>
+                  <TableHead className="text-right">검증 건수</TableHead>
+                  <TableHead className="text-right">수익</TableHead>
+                  <TableHead className="text-right">건당 평균</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -218,9 +218,9 @@ export default function VerifierEarningsDashboard() {
       {/* Settlement History */}
       <Card>
         <CardHeader>
-          <CardTitle>Settlement History</CardTitle>
+          <CardTitle>정산 내역</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Monthly settlements are processed on the 1st of each month
+            월 정산은 매월 1일에 처리됩니다
           </p>
         </CardHeader>
         <CardContent>
@@ -228,19 +228,19 @@ export default function VerifierEarningsDashboard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Period</TableHead>
-                  <TableHead className="text-right">Verifications</TableHead>
-                  <TableHead className="text-right">Earnings</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Payout Date</TableHead>
+                  <TableHead>기간</TableHead>
+                  <TableHead className="text-right">검증 건수</TableHead>
+                  <TableHead className="text-right">수익</TableHead>
+                  <TableHead>상태</TableHead>
+                  <TableHead>지급일</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {settlements.map((settlement) => (
                   <TableRow key={settlement.id}>
                     <TableCell>
-                      {new Date(settlement.periodStart).toLocaleDateString('en-US', {
-                        month: 'short',
+                      {new Date(settlement.periodStart).toLocaleDateString('ko-KR', {
+                        month: 'long',
                         year: 'numeric',
                       })}
                     </TableCell>
@@ -264,7 +264,7 @@ export default function VerifierEarningsDashboard() {
             </Table>
           ) : (
             <p className="text-center text-muted-foreground py-8">
-              No settlements yet
+              정산 내역이 없습니다
             </p>
           )}
         </CardContent>
@@ -273,33 +273,33 @@ export default function VerifierEarningsDashboard() {
       {/* Payment Method Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Payment Method</CardTitle>
+          <CardTitle>결제 수단</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configure how you receive your verification earnings
+            검증 수익을 받을 방법을 설정하세요
           </p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
-                <h3 className="font-medium">Bank Transfer</h3>
+                <h3 className="font-medium">계좌 이체</h3>
                 <p className="text-sm text-muted-foreground">
-                  Direct deposit to your bank account
+                  은행 계좌로 직접 입금
                 </p>
               </div>
               <button className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                Setup
+                설정
               </button>
             </div>
             <div className="flex items-center justify-between p-4 border rounded-lg">
               <div>
                 <h3 className="font-medium">Stripe Connect</h3>
                 <p className="text-sm text-muted-foreground">
-                  Fast payouts via Stripe
+                  Stripe를 통한 빠른 지급
                 </p>
               </div>
               <button className="px-4 py-2 border rounded-md hover:bg-accent">
-                Connect
+                연결
               </button>
             </div>
           </div>

@@ -34,7 +34,7 @@ export function VerificationCard({
             <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
               <Calendar className="h-4 w-4" />
               <span>
-                Requested {new Date(verification.requested_at).toLocaleDateString()}
+                요청일 {new Date(verification.requested_at).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -46,12 +46,12 @@ export function VerificationCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Level</span>
+          <span className="text-gray-600">레벨</span>
           <span className="font-medium">{levelInfo.name}</span>
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Status</span>
+          <span className="text-gray-600">상태</span>
           <span
             className={cn(
               'px-2 py-1 rounded text-xs font-medium',
@@ -67,15 +67,15 @@ export function VerificationCard({
         </div>
 
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Fee</span>
-          <span className="font-medium">${(verification.fee / 100).toFixed(2)}</span>
+          <span className="text-gray-600">수수료</span>
+          <span className="font-medium">₩{verification.fee.toLocaleString()}</span>
         </div>
 
         {viewType === 'verifier' && verification.verifier_share && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Your Share (70%)</span>
+            <span className="text-gray-600">검증 수익 (70%)</span>
             <span className="font-medium text-green-600">
-              ${(verification.verifier_share / 100).toFixed(2)}
+              ₩{verification.verifier_share.toLocaleString()}
             </span>
           </div>
         )}
@@ -83,7 +83,7 @@ export function VerificationCard({
         {verification.verifier && (
           <div className="flex items-center gap-2 text-sm">
             <User className="h-4 w-4 text-gray-400" />
-            <span className="text-gray-600">Verifier:</span>
+            <span className="text-gray-600">검증자:</span>
             <span className="font-medium">
               {verification.verifier.name || verification.verifier.email}
             </span>
@@ -92,7 +92,7 @@ export function VerificationCard({
 
         {verification.score !== null && (
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Score</span>
+            <span className="text-gray-600">점수</span>
             <span className="font-medium">{Math.round(verification.score)}%</span>
           </div>
         )}
@@ -106,7 +106,7 @@ export function VerificationCard({
                 disabled={isClaimPending}
                 className="flex-1"
               >
-                {isClaimPending ? 'Claiming...' : 'Claim Verification'}
+                {isClaimPending ? '신청중...' : '검증 신청'}
               </Button>
             )}
 
@@ -116,8 +116,8 @@ export function VerificationCard({
               <Button asChild className="flex-1">
                 <Link href={`/verifications/${verification.id}/review`}>
                   {verification.status === 'ASSIGNED'
-                    ? 'Start Review'
-                    : 'Continue Review'}
+                    ? '검증 시작'
+                    : '검증 계속'}
                 </Link>
               </Button>
             )}
@@ -125,7 +125,7 @@ export function VerificationCard({
           {(viewType === 'seller' || viewType === 'admin') && (
             <Button asChild variant="outline" className="flex-1">
               <Link href={`/verifications/${verification.id}`}>
-                View Details
+                상세 보기
               </Link>
             </Button>
           )}
@@ -134,7 +134,7 @@ export function VerificationCard({
             verification.status === 'PENDING' && (
               <Button asChild className="flex-1">
                 <Link href={`/admin/verifications/${verification.id}/assign`}>
-                  Assign Verifier
+                  검증자 배정
                 </Link>
               </Button>
             )}
