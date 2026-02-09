@@ -15,30 +15,34 @@ const logoutSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify authentication
-    const authUser = await requireAuth(request);
-
-    // Parse request body
     const body = await request.json().catch(() => ({}));
     const validatedData = logoutSchema.parse(body);
 
-    // Delete sessions for this user
-    if (validatedData.refreshToken) {
-      // Delete specific session by refresh token
+    let authUser: { userId: string } | null = null;
+    try {
+      authUser = await requireAuth(request);
+    } catch {
+    }
+
+    if (authUser?.userId) {
+      if (validatedData.refreshToken) {
+        await prisma.session.deleteMany({
+          where: {
+            userId: authUser.userId,
+            refreshToken: validatedData.refreshToken,
+          },
+        });
+      } else {
+        await prisma.session.deleteMany({
+          where: { userId: authUser.userId },
+        });
+      }
+    } else if (validatedData.refreshToken) {
       await prisma.session.deleteMany({
-        where: {
-          userId: authUser.userId,
-          refreshToken: validatedData.refreshToken,
-        },
-      });
-    } else {
-      // Delete all sessions for this user
-      await prisma.session.deleteMany({
-        where: { userId: authUser.userId },
+        where: { refreshToken: validatedData.refreshToken },
       });
     }
 
-    // Create response and clear cookies
     const response = NextResponse.json({ success: true });
 
     response.cookies.delete('accessToken');
@@ -46,15 +50,6 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    // Handle authentication errors
-    if (error instanceof AuthError) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: error.status }
-      );
-    }
-
-    // Handle validation errors
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         {
@@ -68,11 +63,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle other errors
     console.error('Logout error:', error);
-    return NextResponse.json(
+    const response = NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
     );
+    response.cookies.delete('accessToken');
+    response.cookies.delete('refreshToken');
+    return response;
   }
 }

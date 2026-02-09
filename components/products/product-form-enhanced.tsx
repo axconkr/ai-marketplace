@@ -116,6 +116,7 @@ export function ProductFormEnhanced({
         }
       : {
           currency: 'KRW' as any,
+          category: '' as any,
           tags: [],
           image_urls: [],
           pricing_model: 'one_time' as any,
@@ -127,6 +128,16 @@ export function ProductFormEnhanced({
   // Auto-save draft (debounced)
   // TODO: Implement auto-save functionality
 
+  // Helper to build upload headers with auth token
+  const getUploadHeaders = useCallback((): Record<string, string> => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+  }, []);
+
   // Upload files helper
   const uploadFiles = useCallback(async () => {
     const uploadedUrls: Partial<{
@@ -135,6 +146,8 @@ export function ProductFormEnhanced({
       image_urls: string[];
     }> = {};
 
+    const headers = getUploadHeaders();
+
     try {
       // Upload main file
       if (mainFile) {
@@ -142,11 +155,15 @@ export function ProductFormEnhanced({
         formData.append('file', mainFile);
         const response = await fetch('/api/upload', {
           method: 'POST',
+          headers,
           body: formData,
         });
-        if (!response.ok) throw new Error('파일 업로드 실패');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || '파일 업로드 실패');
+        }
         const data = await response.json();
-        uploadedUrls.file_url = data.url;
+        uploadedUrls.file_url = data.file?.url || data.url;
       }
 
       // Upload thumbnail
@@ -155,11 +172,15 @@ export function ProductFormEnhanced({
         formData.append('file', thumbnailFile);
         const response = await fetch('/api/upload', {
           method: 'POST',
+          headers,
           body: formData,
         });
-        if (!response.ok) throw new Error('썸네일 업로드 실패');
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || '썸네일 업로드 실패');
+        }
         const data = await response.json();
-        uploadedUrls.thumbnail_url = data.url;
+        uploadedUrls.thumbnail_url = data.file?.url || data.url;
       }
 
       // Upload additional images
@@ -170,11 +191,15 @@ export function ProductFormEnhanced({
           formData.append('file', image);
           const response = await fetch('/api/upload', {
             method: 'POST',
+            headers,
             body: formData,
           });
-          if (!response.ok) throw new Error('이미지 업로드 실패');
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error || '이미지 업로드 실패');
+          }
           const data = await response.json();
-          imageUrls.push(data.url);
+          imageUrls.push(data.file?.url || data.url);
         }
         uploadedUrls.image_urls = imageUrls;
       }
@@ -185,7 +210,7 @@ export function ProductFormEnhanced({
         err instanceof Error ? err.message : '파일 업로드 중 오류 발생'
       );
     }
-  }, [mainFile, thumbnailFile, additionalImages]);
+  }, [mainFile, thumbnailFile, additionalImages, getUploadHeaders]);
 
   // Submit handler
   const onSubmit = async (data: ProductCreateInput) => {
@@ -429,7 +454,7 @@ export function ProductFormEnhanced({
                     name="category"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select value={field.value || ''} onValueChange={field.onChange}>
                         <SelectTrigger>
                           <SelectValue placeholder="카테고리 선택" />
                         </SelectTrigger>

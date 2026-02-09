@@ -18,7 +18,7 @@ export default function RegisterPage() {
     kakao_id: '',
     password: '',
     confirmPassword: '',
-    role: 'user', // Changed from 'client' to 'user' to match API
+    role: 'buyer',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -202,7 +202,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="user">구매자</option>
+            <option value="buyer">구매자</option>
             <option value="seller">판매자</option>
           </select>
         </div>
