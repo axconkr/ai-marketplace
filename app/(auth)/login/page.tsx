@@ -178,17 +178,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Test Accounts Helper */}
-      <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-xs font-semibold text-gray-700 mb-2">
-          테스트 계정:
-        </p>
-        <div className="text-xs text-gray-600 space-y-1">
-          <p>관리자: admin@aimarket.com / password123</p>
-          <p>판매자: seller1@aimarket.com / password123</p>
-          <p>구매자: buyer1@aimarket.com / password123</p>
-        </div>
-      </div>
+
     </div>
   );
 }
