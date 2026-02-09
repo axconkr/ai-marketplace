@@ -116,7 +116,11 @@ export async function fetchVerifierStats(
   const endpoint = verifierId
     ? `/verifications/verifier-stats?verifierId=${verifierId}`
     : '/verifications/verifier-stats';
-  return apiFetch<VerifierStats>(endpoint);
+  const res = await apiFetch<{ success?: boolean; data?: VerifierStats } | VerifierStats>(endpoint);
+  if (res && 'success' in res && 'data' in res) {
+    return res.data as VerifierStats;
+  }
+  return res as VerifierStats;
 }
 
 /**
@@ -132,5 +136,9 @@ export async function fetchMyVerifications(): Promise<VerificationWithDetails[]>
 export async function fetchMyAssignedVerifications(): Promise<
   VerificationWithDetails[]
 > {
-  return apiFetch<VerificationWithDetails[]>('/verifications/assigned-to-me');
+  const res = await apiFetch<{ success?: boolean; data?: VerificationWithDetails[] } | VerificationWithDetails[]>('/verifications/assigned-to-me');
+  if (res && !Array.isArray(res) && 'data' in res) {
+    return res.data || [];
+  }
+  return Array.isArray(res) ? res : [];
 }
