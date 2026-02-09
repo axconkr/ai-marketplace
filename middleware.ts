@@ -99,9 +99,19 @@ const routeConfigs: RouteConfig[] = [
 
   // ===== Verifier Routes =====
   {
-    pattern: /^\/verifier\/.+$/,
+    pattern: /^\/verifications$/,
     requireAuth: true,
-    allowedRoles: [UserRole.ADMIN], // Only admin can access verifier routes for now
+    allowedRoles: [UserRole.VERIFIER, UserRole.ADMIN],
+  },
+  {
+    pattern: /^\/verifications\/[^/]+\/review$/,
+    requireAuth: true,
+    allowedRoles: [UserRole.VERIFIER, UserRole.ADMIN],
+  },
+  {
+    pattern: /^\/dashboard\/earnings$/,
+    requireAuth: true,
+    allowedRoles: [UserRole.VERIFIER, UserRole.SELLER, UserRole.ADMIN],
   },
 
   // ===== Admin Routes =====
@@ -179,6 +189,10 @@ export async function middleware(request: NextRequest) {
         } else if (payload.role === UserRole.SELLER) {
           return NextResponse.redirect(
             new URL('/dashboard/products', request.url)
+          );
+        } else if (payload.role === UserRole.VERIFIER) {
+          return NextResponse.redirect(
+            new URL('/verifications', request.url)
           );
         } else {
           return NextResponse.redirect(new URL('/', request.url));

@@ -21,9 +21,13 @@ export function Header() {
 
   // Navigation items based on user role
   const navItems = [
-    { href: '/products', label: '제품', roles: ['user', 'seller', 'admin'] },
+    { href: '/products', label: '제품', roles: ['user', 'seller', 'admin', 'verifier'] },
     ...(user?.role === UserRole.SELLER || user?.role === UserRole.ADMIN
       ? [{ href: '/dashboard', label: '대시보드', roles: ['seller', 'admin'] }]
+      : []
+    ),
+    ...(user?.role === UserRole.VERIFIER
+      ? [{ href: '/verifications', label: '검증 대시보드', roles: ['verifier'] }]
       : []
     ),
   ];
@@ -88,7 +92,7 @@ export function Header() {
                 <User className="h-4 w-4" />
                 <span className="text-sm font-medium">{user.name || user.email}</span>
                 <span className="text-xs text-muted-foreground">
-                  ({user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : '구매자'})
+                   ({user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : user.role === UserRole.VERIFIER ? '검증자' : '구매자'})
                 </span>
               </div>
               <Button variant="ghost" size="sm" asChild>
@@ -130,7 +134,7 @@ export function Header() {
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{user.name || user.email}</span>
                   <span className="text-xs text-muted-foreground">
-                    {user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : '구매자'}
+                    {user.role === UserRole.SELLER ? '판매자' : user.role === UserRole.ADMIN ? '관리자' : user.role === UserRole.VERIFIER ? '검증자' : '구매자'}
                   </span>
                 </div>
               </div>

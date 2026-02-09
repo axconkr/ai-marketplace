@@ -188,21 +188,23 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-3xl mb-3">📦</div>
-              <h3 className="text-xl font-semibold mb-2">주문</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                {user.role === 'seller'
-                  ? '주문을 관리하고 배송 상태를 업데이트하세요'
-                  : '구매 내역을 추적하고 상품을 다운로드하세요'}
-              </p>
-              <Link
-                href="/dashboard/orders"
-                className="text-primary hover:underline font-medium text-sm"
-              >
-                주문 보기 →
-              </Link>
-            </div>
+            {(user.role === 'seller' || user.role === 'buyer') && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">📦</div>
+                <h3 className="text-xl font-semibold mb-2">주문</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  {user.role === 'seller'
+                    ? '주문을 관리하고 배송 상태를 업데이트하세요'
+                    : '구매 내역을 추적하고 상품을 다운로드하세요'}
+                </p>
+                <Link
+                  href="/dashboard/orders"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  주문 보기 →
+                </Link>
+              </div>
+            )}
 
             {user.role === 'seller' && (
               <div className="bg-white rounded-lg shadow-sm p-6">
@@ -229,6 +231,38 @@ export default function ProfilePage() {
                 </p>
                 <Link
                   href="/dashboard/settlements"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  수익 보기 →
+                </Link>
+              </div>
+            )}
+
+            {user.role === 'verifier' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">🔍</div>
+                <h3 className="text-xl font-semibold mb-2">검증 대시보드</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  대기 중인 검증 요청을 확인하고 리뷰를 진행하세요
+                </p>
+                <Link
+                  href="/verifications"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  검증 목록 보기 →
+                </Link>
+              </div>
+            )}
+
+            {user.role === 'verifier' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">💰</div>
+                <h3 className="text-xl font-semibold mb-2">검증 수익</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  검증 수익 내역 및 정산 현황을 확인하세요
+                </p>
+                <Link
+                  href="/dashboard/earnings"
                   className="text-primary hover:underline font-medium text-sm"
                 >
                   수익 보기 →

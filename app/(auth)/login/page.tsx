@@ -66,8 +66,9 @@ export default function LoginPage() {
       // Also trigger storage event for other tabs
       window.dispatchEvent(new Event('storage'));
 
-      // Redirect based on user role
-      if (data.user?.role === 'seller' || data.user?.role === 'admin') {
+      if (data.user?.role === 'verifier') {
+        router.push('/verifications');
+      } else if (data.user?.role === 'seller' || data.user?.role === 'admin') {
         router.push('/dashboard');
       } else {
         router.push('/products');

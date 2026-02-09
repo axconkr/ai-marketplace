@@ -53,8 +53,15 @@ export default function VerifierEarningsDashboard() {
 
   useEffect(() => {
     async function fetchData() {
+      const token = localStorage.getItem('accessToken');
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
       try {
         const currentRes = await fetch('/api/verifier/earnings/current', {
+          headers,
           credentials: 'include',
         });
         if (!currentRes.ok) {
@@ -68,6 +75,7 @@ export default function VerifierEarningsDashboard() {
         setCurrentEarnings(currentData);
 
         const breakdownRes = await fetch('/api/verifier/earnings/breakdown?period=current', {
+          headers,
           credentials: 'include',
         });
         if (breakdownRes.ok) {
@@ -76,6 +84,7 @@ export default function VerifierEarningsDashboard() {
         }
 
         const settlementsRes = await fetch('/api/verifier/settlements', {
+          headers,
           credentials: 'include',
         });
         if (settlementsRes.ok) {
