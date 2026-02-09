@@ -115,10 +115,10 @@ export default function Dashboard() {
     enabled: userRole === 'client',
   });
 
-  // Seller queries
-  const { data: overview, isLoading: overviewLoading } = useSellerOverview(period);
-  const { data: revenueData, isLoading: revenueLoading } = useRevenueData(period);
-  const { data: topProductsData, isLoading: productsLoading } = useTopProducts(period, 5);
+  const isSeller = userRole === 'service_provider' || userRole === 'admin';
+  const { data: overview, isLoading: overviewLoading } = useSellerOverview(period, isSeller);
+  const { data: revenueData, isLoading: revenueLoading } = useRevenueData(period, isSeller);
+  const { data: topProductsData, isLoading: productsLoading } = useTopProducts(period, 5, isSeller);
 
   const { data: recentOrders } = useQuery({
     queryKey: ['recent-orders'],

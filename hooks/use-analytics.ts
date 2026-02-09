@@ -14,7 +14,7 @@ function getAuthHeaders(): HeadersInit {
   };
 }
 
-export function useSellerOverview(period: Period = '30d') {
+export function useSellerOverview(period: Period = '30d', enabled: boolean = true) {
   return useQuery({
     queryKey: ['analytics', 'overview', period],
     queryFn: async () => {
@@ -24,11 +24,12 @@ export function useSellerOverview(period: Period = '30d') {
       if (!res.ok) throw new Error('Failed to fetch overview');
       return res.json();
     },
-    refetchInterval: 60000, // Refresh every minute
+    enabled,
+    refetchInterval: enabled ? 60000 : false,
   });
 }
 
-export function useRevenueData(period: Period = '30d') {
+export function useRevenueData(period: Period = '30d', enabled: boolean = true) {
   return useQuery({
     queryKey: ['analytics', 'revenue', period],
     queryFn: async () => {
@@ -38,11 +39,12 @@ export function useRevenueData(period: Period = '30d') {
       if (!res.ok) throw new Error('Failed to fetch revenue');
       return res.json();
     },
-    refetchInterval: 60000,
+    enabled,
+    refetchInterval: enabled ? 60000 : false,
   });
 }
 
-export function useTopProducts(period: Period = '30d', limit: number = 10) {
+export function useTopProducts(period: Period = '30d', limit: number = 10, enabled: boolean = true) {
   return useQuery({
     queryKey: ['analytics', 'top-products', period, limit],
     queryFn: async () => {
@@ -52,7 +54,8 @@ export function useTopProducts(period: Period = '30d', limit: number = 10) {
       if (!res.ok) throw new Error('Failed to fetch top products');
       return res.json();
     },
-    refetchInterval: 60000,
+    enabled,
+    refetchInterval: enabled ? 60000 : false,
   });
 }
 

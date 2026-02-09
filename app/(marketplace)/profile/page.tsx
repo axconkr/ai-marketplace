@@ -154,42 +154,47 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Features Grid - Admin은 제외 */}
         {user.role !== 'admin' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-3xl mb-3">📊</div>
-              <h3 className="text-xl font-semibold mb-2">대시보드</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                판매 분석, 수익 및 성과 지표를 확인하세요
-              </p>
-              <Link
-                href="/dashboard"
-                className="text-primary hover:underline font-medium text-sm"
-              >
-                대시보드로 이동 →
-              </Link>
-            </div>
+            {user.role === 'seller' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">📊</div>
+                <h3 className="text-xl font-semibold mb-2">대시보드</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  판매 분석, 수익 및 성과 지표를 확인하세요
+                </p>
+                <Link
+                  href="/dashboard"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  대시보드로 이동 →
+                </Link>
+              </div>
+            )}
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-3xl mb-3">🛍️</div>
-              <h3 className="text-xl font-semibold mb-2">내 상품</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                등록된 상품을 관리하고 새로운 상품을 만드세요
-              </p>
-              <Link
-                href="/dashboard/products"
-                className="text-primary hover:underline font-medium text-sm"
-              >
-                상품 보기 →
-              </Link>
-            </div>
+            {user.role === 'seller' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">🛍️</div>
+                <h3 className="text-xl font-semibold mb-2">내 상품</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  등록된 상품을 관리하고 새로운 상품을 만드세요
+                </p>
+                <Link
+                  href="/dashboard/products"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  상품 보기 →
+                </Link>
+              </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="text-3xl mb-3">📦</div>
               <h3 className="text-xl font-semibold mb-2">주문</h3>
               <p className="text-gray-600 mb-4 text-sm">
-                구매 내역을 추적하고 상품을 다운로드하세요
+                {user.role === 'seller'
+                  ? '주문을 관리하고 배송 상태를 업데이트하세요'
+                  : '구매 내역을 추적하고 상품을 다운로드하세요'}
               </p>
               <Link
                 href="/dashboard/orders"
@@ -199,33 +204,37 @@ export default function ProfilePage() {
               </Link>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-3xl mb-3">⭐</div>
-              <h3 className="text-xl font-semibold mb-2">검증</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                제품 검증을 요청하여 신뢰를 구축하고 판매를 늘리세요
-              </p>
-              <Link
-                href="/dashboard/verification"
-                className="text-primary hover:underline font-medium text-sm"
-              >
-                검증 받기 →
-              </Link>
-            </div>
+            {user.role === 'seller' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">⭐</div>
+                <h3 className="text-xl font-semibold mb-2">검증</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  제품 검증을 요청하여 신뢰를 구축하고 판매를 늘리세요
+                </p>
+                <Link
+                  href="/dashboard/verifications"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  검증 받기 →
+                </Link>
+              </div>
+            )}
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="text-3xl mb-3">💰</div>
-              <h3 className="text-xl font-semibold mb-2">수익</h3>
-              <p className="text-gray-600 mb-4 text-sm">
-                수익 내역 및 정산 보고서를 확인하세요
-              </p>
-              <Link
-                href="/dashboard/earnings"
-                className="text-primary hover:underline font-medium text-sm"
-              >
-                수익 보기 →
-              </Link>
-            </div>
+            {user.role === 'seller' && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="text-3xl mb-3">💰</div>
+                <h3 className="text-xl font-semibold mb-2">수익</h3>
+                <p className="text-gray-600 mb-4 text-sm">
+                  수익 내역 및 정산 보고서를 확인하세요
+                </p>
+                <Link
+                  href="/dashboard/settlements"
+                  className="text-primary hover:underline font-medium text-sm"
+                >
+                  수익 보기 →
+                </Link>
+              </div>
+            )}
 
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="text-3xl mb-3">⚙️</div>
@@ -234,7 +243,7 @@ export default function ProfilePage() {
                 프로필, 결제 방법 및 환경설정을 업데이트하세요
               </p>
               <Link
-                href="/dashboard/settings"
+                href="/dashboard/settings/bank-account"
                 className="text-primary hover:underline font-medium text-sm"
               >
                 설정 관리 →
