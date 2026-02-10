@@ -41,7 +41,12 @@ export async function fetchVerifications(
 export async function fetchVerification(
   id: string
 ): Promise<VerificationWithDetails> {
-  return apiFetch<VerificationWithDetails>(`/verifications/${id}`);
+  const res = await apiFetch<{ verification: VerificationWithDetails } | VerificationWithDetails>(`/verifications/${id}`);
+  // API returns { verification: {...} } wrapper - unwrap it
+  if (res && 'verification' in res && typeof res.verification === 'object') {
+    return res.verification;
+  }
+  return res as VerificationWithDetails;
 }
 
 /**

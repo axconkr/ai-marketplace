@@ -94,11 +94,31 @@ export interface Verification {
   completed_at: Date | string | null;
 }
 
+export interface ProductFile {
+  id: string;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  size: number;
+  url: string;
+  path: string;
+  status: string;
+  created_at: string;
+}
+
 export interface VerificationWithDetails extends Verification {
   product: {
     id: string;
     name: string;
+    description?: string | null;
     seller_id: string;
+    category?: string | null;
+    files?: ProductFile[];
+    seller?: {
+      id: string;
+      name: string | null;
+      email: string;
+    } | null;
   };
   verifier?: {
     id: string;
