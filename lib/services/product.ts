@@ -246,12 +246,14 @@ export async function rejectProduct(productId: string, reason?: string) {
 
 /**
  * Increment view count
- * Note: view_count field doesn't exist in schema - consider adding it or removing this function
  */
 export async function incrementViewCount(productId: string) {
-  // TODO: Add view_count field to Product model in schema
-  console.warn('incrementViewCount: view_count field does not exist in Product schema');
-  return null;
+  return await prisma.product.update({
+    where: { id: productId },
+    data: {
+      view_count: { increment: 1 },
+    },
+  });
 }
 
 /**
