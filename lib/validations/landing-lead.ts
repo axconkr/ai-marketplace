@@ -13,9 +13,9 @@ export const landingLeadSchema = z.object({
     .trim()
     .min(1, '이메일을 입력해주세요.')
     .email('올바른 이메일을 입력해주세요.'),
-  contact: requiredText('연락처를 입력해주세요.'),
-  kakaoId: requiredText('카톡아이디를 입력해주세요.'),
-  job: requiredText('하는 일을 입력해주세요.'),
+  contact: z.string().trim().default(''),
+  kakaoId: z.string().trim().default(''),
+  job: z.string().trim().default(''),
   serviceSummary: requiredText('서비스 설명을 입력해주세요.', 10),
   reviewRequest: requiredText('검토 요청 내용을 입력해주세요.', 10),
 });

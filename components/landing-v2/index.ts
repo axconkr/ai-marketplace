@@ -1,0 +1,10 @@
+export { default as Header } from './Header';
+export { default as HeroSection } from './HeroSection';
+export { default as TrustBand } from './TrustBand';
+export { default as DeliverablesSection } from './DeliverablesSection';
+export { default as SampleReportSection } from './SampleReportSection';
+export { default as ProcessSection } from './ProcessSection';
+export { default as TargetCustomerSection } from './TargetCustomerSection';
+export { default as FAQSection } from './FAQSection';
+export { default as CTAFormSection } from './CTAFormSection';
+export { default as Footer } from './Footer';
