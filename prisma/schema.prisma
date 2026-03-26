@@ -443,6 +443,22 @@ model Wishlist {
   @@index([product_id])
 }
 
+model LandingLead {
+  id             String   @id @default(cuid())
+  name           String
+  email          String
+  contact        String
+  kakaoId        String
+  job            String
+  serviceSummary String   @db.Text
+  reviewRequest  String   @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([email])
+  @@index([createdAt])
+}
+
 model DevelopmentRequest {
   id                 String     @id @default(cuid())
   title              String
