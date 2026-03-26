@@ -197,9 +197,9 @@ export default function CTAFormSection() {
                   {/* Service link */}
                   <FormField
                     id="serviceSummary"
-                    label="서비스 링크 또는 소개"
+                    label="서비스 링크 또는 깃허브 주소"
                     required
-                    hint="URL 또는 간단한 설명"
+                    hint="URL 또는 GitHub 주소"
                   >
                     <textarea
                       id="serviceSummary"
@@ -208,7 +208,7 @@ export default function CTAFormSection() {
                       rows={3}
                       value={values.serviceSummary}
                       onChange={handleChange}
-                      placeholder="https://myservice.com&#10;또는 서비스에 대한 간단한 설명을 입력해주세요."
+                      placeholder="https://myservice.com&#10;또는 https://github.com/username/repo"
                       className={`${INPUT_CLASS} resize-none`}
                       disabled={isLoading}
                     />
